@@ -1,0 +1,271 @@
+"""🔍 Analisis Saham – Full stock analyzer with snapshot, charts, and AI."""
+
+from lib.config import setup_page, show_disclosure
+setup_page("Analisis Saham – Analis Saham")
+
+import streamlit as st
+from lib.market_data import (
+    PERIOD_MAP, TOP_IDX_STOCKS, get_quote, get_history,
+    get_stock_fundamentals, get_previous_close,
+    format_idr, format_pct, format_number,
+)
+from lib.charts import render_price_chart, render_gauge, CHART_VIEWS
+from lib.signals import compute_technical_score, compute_fundamental_score, at_a_glance
+from lib.logos import get_logo_html
+from lib.news import get_ticker_news
+from lib.groq_analyst import bull_bear_case, deep_analysis
+
+st.title("🔍 Analisis Saham")
+
+# ── Ticker Input ──
+col_input, col_period = st.columns([2, 3])
+with col_input:
+    ticker_input = st.text_input(
+        "Kode Saham",
+        value="BBCA.JK",
+        placeholder="Contoh: BBCA.JK, TLKM.JK",
+        help="Masukkan kode saham IDX dengan akhiran .JK",
+    )
+
+# Normalize ticker
+ticker = ticker_input.strip().upper()
+if not ticker.endswith(".JK") and not ticker.startswith("^"):
+    ticker = ticker + ".JK"
+
+with col_period:
+    periods = list(PERIOD_MAP.keys())
+    selected_period = st.radio("Periode", periods, index=6, horizontal=True, key="sa_period")
+    yf_period = PERIOD_MAP[selected_period]
+
+# ── Load Data ──
+with st.spinner(f"Memuat data {ticker}..."):
+    quote = get_quote(ticker)
+    fundamentals = get_stock_fundamentals(ticker)
+    hist = get_history(ticker, yf_period)
+
+if quote.get("price", 0) == 0:
+    st.error(f"Tidak dapat memuat data untuk **{ticker}**. Pastikan kode saham benar.")
+    show_disclosure()
+    st.stop()
+
+# ── Header Row ──
+logo_html = get_logo_html(ticker, size=64)
+name = fundamentals.get("shortName") or fundamentals.get("longName") or quote["name"]
+sector = fundamentals.get("sector", "N/A")
+industry = fundamentals.get("industry", "N/A")
+
+st.markdown(f"""
+<div style="display:flex;align-items:center;gap:20px;margin:16px 0;">
+    {logo_html}
+    <div>
+        <h2 style="margin:0;">{name}</h2>
+        <p style="color:#888;margin:4px 0;">{ticker} · {sector} · {industry}</p>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Metric tiles
+m1, m2, m3, m4 = st.columns(4)
+pct_color = "normal" if quote["pctChange"] >= 0 else "inverse"
+with m1:
+    st.metric("Harga", f"Rp{quote['price']:,.0f}", f"{quote['pctChange']:+.2f}%")
+with m2:
+    st.metric("Market Cap", format_idr(quote["marketCap"]))
+with m3:
+    pe = fundamentals.get("trailingPE")
+    st.metric("Trailing P/E", f"{pe:.1f}x" if pe else "N/A")
+with m4:
+    beta = fundamentals.get("beta")
+    st.metric("Beta", f"{beta:.2f}" if beta else "N/A")
+
+st.divider()
+
+# ── Price Chart ──
+st.subheader("📈 Grafik Harga")
+view = st.radio("Tampilan", CHART_VIEWS, horizontal=True, key="sa_view")
+
+if not hist.empty:
+    baseline = get_previous_close(ticker) if selected_period == "1D" else None
+    fig = render_price_chart(hist, view=view, title=f"{ticker}", baseline_price=baseline)
+    if fig:
+        st.plotly_chart(fig, use_container_width=True)
+else:
+    st.warning("Data historis tidak tersedia.")
+
+st.divider()
+
+# ── Snapshot Section ──
+st.subheader("📋 Snapshot")
+
+# Prepare scores
+closes = hist["Close"].dropna().tolist() if not hist.empty else []
+tech_score, tech_drivers = compute_technical_score(
+    closes,
+    high_52w=fundamentals.get("fiftyTwoWeekHigh"),
+    low_52w=fundamentals.get("fiftyTwoWeekLow"),
+    sma50=fundamentals.get("fiftyDayAverage"),
+    sma200=fundamentals.get("twoHundredDayAverage"),
+)
+fund_score, fund_drivers = compute_fundamental_score(fundamentals)
+chips = at_a_glance(quote["price"], fundamentals, closes)
+
+# Caption
+st.caption(
+    f"Analisis snapshot untuk {name} ({ticker}) berdasarkan data terkini. "
+    "Skor bersifat edukatif, bukan rekomendasi investasi."
+)
+
+# Three columns
+col_glance, col_tech, col_fund = st.columns([1.2, 1, 1])
+
+with col_glance:
+    st.markdown('<div class="gauge-card">', unsafe_allow_html=True)
+    st.markdown("**📌 Sekilas (At a Glance)**")
+    for chip in chips:
+        st.markdown(
+            f'<span class="chip" style="border-color:{chip["color"]};">'
+            f'<b>{chip["label"]}:</b> {chip["value"]}</span>',
+            unsafe_allow_html=True,
+        )
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with col_tech:
+    fig_tech = render_gauge(
+        tech_score,
+        title="Technical Strength",
+        subtitle="Tren, momentum, posisi vs rata-rata",
+        height=220,
+    )
+    st.plotly_chart(fig_tech, use_container_width=True)
+    with st.expander("Detail Teknikal"):
+        for d in tech_drivers:
+            st.markdown(f"• {d}")
+
+with col_fund:
+    fig_fund = render_gauge(
+        fund_score,
+        title="Fundamental Quality",
+        subtitle="Margin, return, leverage, pertumbuhan",
+        height=220,
+    )
+    st.plotly_chart(fig_fund, use_container_width=True)
+    with st.expander("Detail Fundamental"):
+        for d in fund_drivers:
+            st.markdown(f"• {d}")
+
+st.divider()
+
+# ── Key Statistics ──
+st.subheader("📊 Statistik Kunci")
+
+stat_cols = st.columns(3)
+
+with stat_cols[0]:
+    st.markdown("**Valuasi**")
+    stats_v = {
+        "Trailing P/E": format_number(fundamentals.get("trailingPE"), "x"),
+        "Forward P/E": format_number(fundamentals.get("forwardPE"), "x"),
+        "P/B Ratio": format_number(fundamentals.get("priceToBook"), "x"),
+        "EV": format_idr(fundamentals.get("enterpriseValue")),
+        "Dividend Yield": format_number(
+            (fundamentals.get("dividendYield") or 0) * 100, "%"
+        ) if fundamentals.get("dividendYield") else "N/A",
+    }
+    for k, v in stats_v.items():
+        st.markdown(f"**{k}:** {v}")
+
+    st.markdown("**Perdagangan**")
+    stats_t = {
+        "52W High": f"Rp{fundamentals.get('fiftyTwoWeekHigh', 0):,.0f}",
+        "52W Low": f"Rp{fundamentals.get('fiftyTwoWeekLow', 0):,.0f}",
+        "SMA-50": f"Rp{fundamentals.get('fiftyDayAverage', 0):,.0f}",
+        "SMA-200": f"Rp{fundamentals.get('twoHundredDayAverage', 0):,.0f}",
+        "Avg Volume": format_number(fundamentals.get("averageVolume"), decimals=0),
+    }
+    for k, v in stats_t.items():
+        st.markdown(f"**{k}:** {v}")
+
+with stat_cols[1]:
+    st.markdown("**Profitabilitas**")
+    stats_p = {
+        "Gross Margin": format_number(
+            (fundamentals.get("grossMargins") or 0) * 100, "%"
+        ) if fundamentals.get("grossMargins") else "N/A",
+        "Operating Margin": format_number(
+            (fundamentals.get("operatingMargins") or 0) * 100, "%"
+        ) if fundamentals.get("operatingMargins") else "N/A",
+        "Net Margin": format_number(
+            (fundamentals.get("profitMargins") or 0) * 100, "%"
+        ) if fundamentals.get("profitMargins") else "N/A",
+        "ROE": format_number(
+            (fundamentals.get("returnOnEquity") or 0) * 100, "%"
+        ) if fundamentals.get("returnOnEquity") else "N/A",
+        "ROA": format_number(
+            (fundamentals.get("returnOnAssets") or 0) * 100, "%"
+        ) if fundamentals.get("returnOnAssets") else "N/A",
+    }
+    for k, v in stats_p.items():
+        st.markdown(f"**{k}:** {v}")
+
+with stat_cols[2]:
+    st.markdown("**Neraca & Pendapatan**")
+    stats_b = {
+        "D/E Ratio": format_number(fundamentals.get("debtToEquity"), "%"),
+        "Current Ratio": format_number(fundamentals.get("currentRatio"), "x"),
+        "Total Revenue": format_idr(fundamentals.get("totalRevenue")),
+        "Total Debt": format_idr(fundamentals.get("totalDebt")),
+        "Total Cash": format_idr(fundamentals.get("totalCash")),
+        "Free Cash Flow": format_idr(fundamentals.get("freeCashflow")),
+        "Revenue Growth": format_number(
+            (fundamentals.get("revenueGrowth") or 0) * 100, "%"
+        ) if fundamentals.get("revenueGrowth") else "N/A",
+        "Earnings Growth": format_number(
+            (fundamentals.get("earningsGrowth") or 0) * 100, "%"
+        ) if fundamentals.get("earningsGrowth") else "N/A",
+    }
+    for k, v in stats_b.items():
+        st.markdown(f"**{k}:** {v}")
+
+# ── Business Summary ──
+summary = fundamentals.get("longBusinessSummary")
+if summary:
+    with st.expander("📄 Deskripsi Bisnis"):
+        st.write(summary)
+
+st.divider()
+
+# ── AI Analysis Tabs ──
+st.subheader("🤖 Analisis AI (Groq)")
+
+tab_bull, tab_deep, tab_news = st.tabs(["🐂🐻 Bull/Bear Case", "📝 Analisis Mendalam", "📰 Berita Terkini"])
+
+with tab_bull:
+    if st.button("Generate Bull/Bear Case", key="btn_bull"):
+        with st.spinner("AI sedang menganalisis..."):
+            result = bull_bear_case(ticker, name, fundamentals, quote)
+        st.markdown(result)
+
+with tab_deep:
+    if st.button("Generate Analisis Mendalam", key="btn_deep"):
+        with st.spinner("AI sedang menganalisis secara mendalam..."):
+            result = deep_analysis(ticker, name, fundamentals, quote)
+        st.markdown(result)
+
+with tab_news:
+    news = get_ticker_news(ticker, max_items=10)
+    if news:
+        for item in news:
+            st.markdown(f"""
+            <div class="news-card">
+                <a href="{item['link']}" target="_blank" style="color:#00d4aa;text-decoration:none;">
+                    <b>{item['title']}</b>
+                </a>
+                <p style="color:#888;font-size:0.8rem;margin:4px 0 0 0;">
+                    {item['publisher']} · {item['time_ago']}
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.info("Tidak ada berita terkini untuk saham ini.")
+
+show_disclosure()

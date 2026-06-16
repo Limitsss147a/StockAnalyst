@@ -185,7 +185,7 @@ def setup_page(title="Analis Saham Indonesia", layout="wide"):
     )
     st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
     st.logo(
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Logo_of_the_Indonesia_Stock_Exchange.svg/1024px-Logo_of_the_Indonesia_Stock_Exchange.svg.png", 
+        "assets/logo.png", 
         link="https://www.idx.co.id/",
     )
 

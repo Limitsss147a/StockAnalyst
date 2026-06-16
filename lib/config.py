@@ -109,6 +109,25 @@ CUSTOM_CSS = """
         border-right: 1px solid rgba(255,255,255,0.05);
     }
     
+    /* Sidebar Navigation Links */
+    div[data-testid="stSidebarNav"] li {
+        margin: 4px 12px;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    div[data-testid="stSidebarNav"] a {
+        transition: all 0.2s;
+        border-radius: 8px;
+    }
+    div[data-testid="stSidebarNav"] a:hover {
+        background: rgba(0, 212, 170, 0.1) !important;
+        color: #00e6b8 !important;
+        transform: translateX(4px);
+    }
+    div[data-testid="stSidebarNav"] a:hover span {
+        color: #00e6b8 !important;
+    }
+    
     h1, h2, h3 { 
         font-weight: 600; 
         letter-spacing: -0.02em;
@@ -162,9 +181,10 @@ def setup_page(title="Analis Saham Indonesia", layout="wide"):
         initial_sidebar_state="expanded",
     )
     st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
-    with st.sidebar:
-        st.markdown(f"# {APP_NAME}")
-        st.caption("Dashboard Analisis Pasar Saham Indonesia")
+    st.logo(
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Logo_of_the_Indonesia_Stock_Exchange.svg/1024px-Logo_of_the_Indonesia_Stock_Exchange.svg.png", 
+        link="https://www.idx.co.id/",
+    )
 
 
 def show_disclosure():

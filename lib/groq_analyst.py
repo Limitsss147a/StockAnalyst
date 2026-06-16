@@ -151,3 +151,57 @@ Berikan analisis:
 JANGAN berikan rekomendasi beli/jual spesifik."""
 
     return _call(SYSTEM_ANALYST, prompt, max_tokens=2000)
+
+
+def timeframe_analysis(ticker: str, name: str, timeframe: str,
+                       report: dict, fundamentals: dict) -> str:
+    """Generate AI analysis specific to a trading timeframe."""
+    signals_str = "\n".join(
+        f"- [{s['type'].upper()}] {s['name']}: {s['detail']}"
+        for s in report.get("signals", [])
+    )
+    vals = report.get("values", {})
+    levels = report.get("levels", {})
+    config = report.get("config", {})
+
+    timeframe_desc = {
+        "Day Trade": "day trading (intraday, hitungan jam)",
+        "Swing Trade": "swing trading (beberapa hari sampai minggu)",
+        "Long Term": "investasi jangka panjang (bulan sampai tahun)",
+    }.get(timeframe, timeframe)
+
+    prompt = f"""Kamu diminta menganalisis saham {ticker} ({name}) dari perspektif **{timeframe_desc}**.
+
+## Sinyal Terdeteksi:
+{signals_str}
+
+## Data Teknikal:
+- Harga: Rp{vals.get('price', 0):,.0f}
+- RSI({config.get('rsi_period', 14)}): {vals.get('rsi', 0):.1f}
+- MACD Histogram: {vals.get('macd_hist', 0):,.0f}
+- SMA-Fast({config.get('sma_fast', 0)}): Rp{vals.get('sma_fast', 0):,.0f}
+- SMA-Slow({config.get('sma_slow', 0)}): Rp{vals.get('sma_slow', 0):,.0f}
+- Bollinger: Lower Rp{vals.get('bb_lower', 0):,.0f} – Upper Rp{vals.get('bb_upper', 0):,.0f}
+- Stochastic: %K={vals.get('stoch_k', 0):.0f}, %D={vals.get('stoch_d', 0):.0f}
+- ATR: Rp{vals.get('atr', 0):,.0f}
+- Volume vs Avg: {vals.get('volume_last', 0) / max(vals.get('volume_avg', 1), 1):.1f}x
+
+## Level Penting:
+- Support 1: Rp{levels.get('support_1', 0):,.0f}
+- Support 2: Rp{levels.get('support_2', 0):,.0f}
+- Resistance: Rp{levels.get('resistance_1', 0):,.0f}
+
+## Sinyal Keseluruhan: {report.get('overall_signal', 'N/A')} (Confidence: {report.get('confidence', 0)}%)
+
+Berikan analisis dalam konteks **{timeframe_desc}** meliputi:
+1. **📊 Kondisi Teknikal** – Interpretasi sinyal-sinyal di atas untuk timeframe ini
+2. **📈 Tren & Momentum** – Arah tren dan kekuatan momentum saat ini
+3. **📐 Level Penting** – Area support/resistance yang perlu diperhatikan
+4. **⚡ Skenario** – 2 skenario yang mungkin terjadi (positif dan negatif)
+5. **⚠️ Risiko** – Faktor risiko spesifik untuk timeframe {timeframe_desc}
+
+INGAT: JANGAN berikan rekomendasi beli/jual. Analisis ini hanya untuk edukasi.
+Gunakan Bahasa Indonesia yang mudah dipahami."""
+
+    return _call(SYSTEM_ANALYST, prompt, max_tokens=2500)
+

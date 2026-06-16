@@ -9,7 +9,7 @@ from lib.market_data import get_quote, format_idr, format_pct, color_for_change
 # ── Header ──
 st.markdown("""
 <div style="text-align:center; padding: 20px 0 10px 0;">
-    <h1 style="font-size:2.5rem; margin-bottom:0;">:material/trending_up: Analis Saham Indonesia</h1>
+    <h1 style="font-size:2.5rem; margin-bottom:0;"><span class="material-symbols-rounded" style="font-size:2.5rem; vertical-align:middle; color:#00d4aa;">trending_up</span> Analis Saham Indonesia</h1>
     <p style="color:#888; font-size:1.1rem; margin-top:8px;">
         Dashboard analisis pasar saham Indonesia – Edukasi & Riset
     </p>
@@ -67,7 +67,7 @@ nav_cols = st.columns(3)
 with nav_cols[0]:
     st.markdown("""
     <div class="metric-card">
-        <h3>:material/vital_signs: Market Pulse</h3>
+        <h3><span class="material-symbols-rounded" style="vertical-align:middle; color:#00d4aa;">vital_signs</span> Market Pulse</h3>
         <p style="color:#888;">Pantau indeks, sektor, saham unggulan, dan berita pasar secara real-time.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -75,7 +75,7 @@ with nav_cols[0]:
 with nav_cols[1]:
     st.markdown("""
     <div class="metric-card">
-        <h3>:material/troubleshoot: Analisis Saham</h3>
+        <h3><span class="material-symbols-rounded" style="vertical-align:middle; color:#00d4aa;">troubleshoot</span> Analis Saham</h3>
         <p style="color:#888;">Analisis teknikal & fundamental lengkap untuk saham IDX pilihan Anda.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -83,7 +83,7 @@ with nav_cols[1]:
 with nav_cols[2]:
     st.markdown("""
     <div class="metric-card">
-        <h3>:material/donut_small: Analisis Indeks</h3>
+        <h3><span class="material-symbols-rounded" style="vertical-align:middle; color:#00d4aa;">donut_small</span> Analisis Indeks</h3>
         <p style="color:#888;">Performa indeks IHSG, konstituen, dan perbandingan sektor.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -92,7 +92,7 @@ nav_cols2 = st.columns(3)
 with nav_cols2[0]:
     st.markdown("""
     <div class="metric-card">
-        <h3>:material/travel_explore: Makroekonomi</h3>
+        <h3><span class="material-symbols-rounded" style="vertical-align:middle; color:#00d4aa;">travel_explore</span> Makroekonomi</h3>
         <p style="color:#888;">Data makro Indonesia: kurs, inflasi, BI Rate, dan analisis AI.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -100,7 +100,7 @@ with nav_cols2[0]:
 with nav_cols2[1]:
     st.markdown("""
     <div class="metric-card">
-        <h3>:material/wallet: Portofolio</h3>
+        <h3><span class="material-symbols-rounded" style="vertical-align:middle; color:#00d4aa;">wallet</span> Portofolio</h3>
         <p style="color:#888;">Kelola dan analisis portofolio investasi saham Anda.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -108,7 +108,7 @@ with nav_cols2[1]:
 with nav_cols2[2]:
     st.markdown("""
     <div class="metric-card">
-        <h3>:material/article: Berita</h3>
+        <h3><span class="material-symbols-rounded" style="vertical-align:middle; color:#00d4aa;">article</span> Berita</h3>
         <p style="color:#888;">Berita terkini seputar pasar saham dan ekonomi.</p>
     </div>
     """, unsafe_allow_html=True)

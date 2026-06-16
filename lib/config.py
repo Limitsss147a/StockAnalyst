@@ -184,10 +184,7 @@ def setup_page(title="Analis Saham Indonesia", layout="wide"):
         initial_sidebar_state="expanded",
     )
     st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
-    st.logo(
-        "assets/logo.png", 
-        link="https://www.idx.co.id/",
-    )
+    st.logo("assets/logo.png")
 
 
 def show_disclosure():

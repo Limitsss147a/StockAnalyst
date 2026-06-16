@@ -21,7 +21,7 @@ from lib.logos import get_logo_html
 from lib.news import get_ticker_news
 from lib.groq_analyst import bull_bear_case, deep_analysis
 
-st.title("🔍 Analisis Saham")
+st.title(":material/troubleshoot: Analisis Saham")
 
 # ── Ticker Input ──
 col_input, col_period = st.columns([2, 3])
@@ -82,7 +82,7 @@ with m4:
 st.divider()
 
 # ── Price Chart ──
-st.subheader("📈 Grafik Harga")
+st.subheader(":material/candlestick_chart: Grafik Harga")
 view = st.radio("Tampilan", CHART_VIEWS, horizontal=True, key="sa_view")
 
 if not hist.empty:
@@ -98,7 +98,7 @@ st.divider()
 # ══════════════════════════════════════════════════════════════
 # ── NEW: Technical Indicators Chart ──
 # ══════════════════════════════════════════════════════════════
-st.subheader("📉 Indikator Teknikal")
+st.subheader(":material/stacked_line_chart: Indikator Teknikal")
 
 if not hist.empty and len(hist) >= 15:
     # Indicator toggles
@@ -175,7 +175,7 @@ else:
 st.divider()
 
 # ── Snapshot Section ──
-st.subheader("📋 Snapshot")
+st.subheader(":material/summarize: Snapshot")
 
 closes = hist["Close"].dropna().tolist() if not hist.empty else []
 tech_score, tech_drivers = compute_technical_score(
@@ -197,7 +197,7 @@ col_glance, col_tech, col_fund = st.columns([1.2, 1, 1])
 
 with col_glance:
     st.markdown('<div class="gauge-card">', unsafe_allow_html=True)
-    st.markdown("**📌 Sekilas (At a Glance)**")
+    st.markdown("**:material/push_pin: Sekilas (At a Glance)**")
     for chip in chips:
         st.markdown(
             f'<span class="chip" style="border-color:{chip["color"]};">'
@@ -227,7 +227,7 @@ st.divider()
 # ══════════════════════════════════════════════════════════════
 # ── NEW: Laporan Keuangan Multi-Periode ──
 # ══════════════════════════════════════════════════════════════
-st.subheader("📑 Laporan Keuangan")
+st.subheader(":material/receipt_long: Laporan Keuangan")
 
 fin_period = st.radio("Periode Laporan", ["Tahunan", "Kuartalan"], horizontal=True, key="fin_period")
 is_quarterly = fin_period == "Kuartalan"
@@ -238,7 +238,7 @@ with st.spinner("Memuat laporan keuangan..."):
     cashflow = get_cash_flow(ticker, quarterly=is_quarterly)
 
 fin_tab1, fin_tab2, fin_tab3, fin_tab4 = st.tabs([
-    "📊 Revenue & Laba", "📈 Tren Margin", "🏦 Neraca", "💰 Arus Kas"
+    ":material/bar_chart: Revenue & Laba", ":material/show_chart: Tren Margin", ":material/account_balance: Neraca", ":material/payments: Arus Kas"
 ])
 
 with fin_tab1:
@@ -246,7 +246,7 @@ with fin_tab1:
         fig_rev = render_revenue_profit_chart(income)
         if fig_rev:
             st.plotly_chart(fig_rev, use_container_width=True)
-        with st.expander("📋 Data Lengkap – Laba Rugi"):
+        with st.expander(":material/table: Data Lengkap – Laba Rugi"):
             st.dataframe(format_financial_table(income), use_container_width=True)
     else:
         st.info("Data laba rugi tidak tersedia.")
@@ -264,7 +264,7 @@ with fin_tab3:
         fig_bs = render_balance_sheet_chart(balance)
         if fig_bs:
             st.plotly_chart(fig_bs, use_container_width=True)
-        with st.expander("📋 Data Lengkap – Neraca"):
+        with st.expander(":material/table: Data Lengkap – Neraca"):
             st.dataframe(format_financial_table(balance), use_container_width=True)
     else:
         st.info("Data neraca tidak tersedia.")
@@ -274,7 +274,7 @@ with fin_tab4:
         fig_cf = render_cashflow_chart(cashflow)
         if fig_cf:
             st.plotly_chart(fig_cf, use_container_width=True)
-        with st.expander("📋 Data Lengkap – Arus Kas"):
+        with st.expander(":material/table: Data Lengkap – Arus Kas"):
             st.dataframe(format_financial_table(cashflow), use_container_width=True)
     else:
         st.info("Data arus kas tidak tersedia.")
@@ -282,7 +282,7 @@ with fin_tab4:
 st.divider()
 
 # ── Key Statistics ──
-st.subheader("📊 Statistik Kunci")
+st.subheader(":material/query_stats: Statistik Kunci")
 
 stat_cols = st.columns(3)
 
@@ -342,15 +342,15 @@ with stat_cols[2]:
 
 summary = fundamentals.get("longBusinessSummary")
 if summary:
-    with st.expander("📄 Deskripsi Bisnis"):
+    with st.expander(":material/description: Deskripsi Bisnis"):
         st.write(summary)
 
 st.divider()
 
 # ── AI Analysis Tabs ──
-st.subheader("🤖 Analisis AI (Groq)")
+st.subheader(":material/smart_toy: Analisis AI (Groq)")
 
-tab_bull, tab_deep, tab_news = st.tabs(["🐂🐻 Bull/Bear Case", "📝 Analisis Mendalam", "📰 Berita Terkini"])
+tab_bull, tab_deep, tab_news = st.tabs([":material/compare_arrows: Bull/Bear Case", ":material/manage_search: Analisis Mendalam", ":material/article: Berita Terkini"])
 
 with tab_bull:
     if st.button("Generate Bull/Bear Case", key="btn_bull"):

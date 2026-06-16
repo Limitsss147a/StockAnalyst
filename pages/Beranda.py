@@ -9,7 +9,7 @@ from lib.market_data import get_quote, format_idr, format_pct, color_for_change
 # ── Header ──
 st.markdown("""
 <div style="text-align:center; padding: 20px 0 10px 0;">
-    <h1 style="font-size:2.5rem; margin-bottom:0;">📈 Analis Saham Indonesia</h1>
+    <h1 style="font-size:2.5rem; margin-bottom:0;">:material/trending_up: Analis Saham Indonesia</h1>
     <p style="color:#888; font-size:1.1rem; margin-top:8px;">
         Dashboard analisis pasar saham Indonesia – Edukasi & Riset
     </p>
@@ -19,7 +19,7 @@ st.markdown("""
 st.divider()
 
 # ── Quick Market Snapshot ──
-st.subheader("📊 Ringkasan Pasar")
+st.subheader(":material/dashboard: Ringkasan Pasar")
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -31,14 +31,14 @@ with st.spinner("Memuat data pasar..."):
 
 with col1:
     st.metric(
-        "🇮🇩 IHSG",
+        ":material/location_on: IHSG",
         f"{ihsg['price']:,.0f}",
         f"{ihsg['pctChange']:+.2f}%",
     )
 
 with col2:
     st.metric(
-        "💱 USD/IDR",
+        ":material/currency_exchange: USD/IDR",
         f"Rp{usd_idr['price']:,.0f}",
         f"{usd_idr['pctChange']:+.2f}%",
         delta_color="inverse",
@@ -46,14 +46,14 @@ with col2:
 
 with col3:
     st.metric(
-        "🥇 Emas",
+        ":material/workspace_premium: Emas",
         f"${gold['price']:,.1f}",
         f"{gold['pctChange']:+.2f}%",
     )
 
 with col4:
     st.metric(
-        "🛢️ Minyak",
+        ":material/water_drop: Minyak",
         f"${oil['price']:,.1f}",
         f"{oil['pctChange']:+.2f}%",
     )
@@ -61,13 +61,13 @@ with col4:
 st.divider()
 
 # ── Quick Navigation ──
-st.subheader("🧭 Menu Utama")
+st.subheader(":material/explore: Menu Utama")
 
 nav_cols = st.columns(3)
 with nav_cols[0]:
     st.markdown("""
     <div class="metric-card">
-        <h3>💹 Market Pulse</h3>
+        <h3>:material/vital_signs: Market Pulse</h3>
         <p style="color:#888;">Pantau indeks, sektor, saham unggulan, dan berita pasar secara real-time.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -75,7 +75,7 @@ with nav_cols[0]:
 with nav_cols[1]:
     st.markdown("""
     <div class="metric-card">
-        <h3>🔍 Analisis Saham</h3>
+        <h3>:material/troubleshoot: Analisis Saham</h3>
         <p style="color:#888;">Analisis teknikal & fundamental lengkap untuk saham IDX pilihan Anda.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -83,7 +83,7 @@ with nav_cols[1]:
 with nav_cols[2]:
     st.markdown("""
     <div class="metric-card">
-        <h3>📊 Analisis Indeks</h3>
+        <h3>:material/donut_small: Analisis Indeks</h3>
         <p style="color:#888;">Performa indeks IHSG, konstituen, dan perbandingan sektor.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -92,7 +92,7 @@ nav_cols2 = st.columns(3)
 with nav_cols2[0]:
     st.markdown("""
     <div class="metric-card">
-        <h3>🌍 Makroekonomi</h3>
+        <h3>:material/travel_explore: Makroekonomi</h3>
         <p style="color:#888;">Data makro Indonesia: kurs, inflasi, BI Rate, dan analisis AI.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -100,7 +100,7 @@ with nav_cols2[0]:
 with nav_cols2[1]:
     st.markdown("""
     <div class="metric-card">
-        <h3>💼 Portofolio</h3>
+        <h3>:material/wallet: Portofolio</h3>
         <p style="color:#888;">Kelola dan analisis portofolio investasi saham Anda.</p>
     </div>
     """, unsafe_allow_html=True)
@@ -108,14 +108,14 @@ with nav_cols2[1]:
 with nav_cols2[2]:
     st.markdown("""
     <div class="metric-card">
-        <h3>📰 Berita</h3>
+        <h3>:material/article: Berita</h3>
         <p style="color:#888;">Berita terkini seputar pasar saham dan ekonomi.</p>
     </div>
     """, unsafe_allow_html=True)
 
 # ── Top Blue Chips Quick View ──
 st.divider()
-st.subheader("🏆 Saham Blue Chip")
+st.subheader(":material/military_tech: Saham Blue Chip")
 
 blue_chips = ["BBCA.JK", "BBRI.JK", "BMRI.JK", "TLKM.JK", "ASII.JK", "UNVR.JK"]
 bc_cols = st.columns(len(blue_chips))

@@ -13,7 +13,7 @@ from lib.charts import render_price_chart, render_gauge, render_sector_heatmap, 
 from lib.risk import compute_risk_score
 from lib.logos import get_logo_html
 
-st.title("📊 Analisis Indeks")
+st.title(":material/donut_small: Analisis Indeks")
 st.caption("Analisis indeks pasar saham Indonesia")
 
 # ── Index Selection ──
@@ -59,7 +59,7 @@ if quote.get("price", 0) > 0:
 st.divider()
 
 # ── Chart ──
-st.subheader("📈 Grafik Indeks")
+st.subheader(":material/show_chart: Grafik Indeks")
 view = st.radio("Tampilan", CHART_VIEWS, horizontal=True, key="idx_view")
 
 hist = get_history(idx_ticker, yf_period)
@@ -72,7 +72,7 @@ if not hist.empty:
 st.divider()
 
 # ── Returns Table ──
-st.subheader("📊 Tabel Return")
+st.subheader(":material/percent: Tabel Return")
 
 return_periods = {"YTD": "ytd", "1Y": "1y", "3Y": "3y", "5Y": "5y"}
 returns_data = {}
@@ -103,7 +103,7 @@ if returns_data:
 st.divider()
 
 # ── Risk Gauge ──
-st.subheader("⚠️ Profil Risiko Indeks")
+st.subheader(":material/warning: Profil Risiko Indeks")
 
 if not hist.empty:
     closes_list = hist["Close"].dropna().tolist()
@@ -128,7 +128,7 @@ if not hist.empty:
 st.divider()
 
 # ── Sector Breakdown ──
-st.subheader("🏭 Komposisi Sektor")
+st.subheader(":material/category: Komposisi Sektor")
 
 with st.spinner("Memuat data sektor..."):
     sector_perf = {}
@@ -148,7 +148,7 @@ if sector_perf:
 st.divider()
 
 # ── Top Constituents ──
-st.subheader("🏆 Konstituen Utama")
+st.subheader(":material/groups: Konstituen Utama")
 
 with st.spinner("Memuat data konstituen..."):
     const_data = []

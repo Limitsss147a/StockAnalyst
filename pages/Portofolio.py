@@ -13,11 +13,11 @@ from lib.logos import get_logo_html
 from lib.groq_analyst import portfolio_analysis
 from lib.market_data import get_history
 
-st.title("💼 Portofolio Saya")
+st.title(":material/account_balance_wallet: Portofolio Saya")
 st.caption("Kelola dan analisis portofolio investasi saham Anda")
 
 # ── Add Holdings ──
-with st.expander("➕ Tambah Saham", expanded=False):
+with st.expander(":material/add_circle: Tambah Saham", expanded=False):
     col_t, col_s, col_p = st.columns(3)
     with col_t:
         new_ticker = st.text_input("Kode Saham", placeholder="BBCA.JK", key="new_ticker")
@@ -26,7 +26,7 @@ with st.expander("➕ Tambah Saham", expanded=False):
     with col_p:
         new_price = st.number_input("Harga Rata-rata (Rp)", min_value=1, value=8000, key="new_price")
 
-    if st.button("💾 Simpan", key="btn_add"):
+    if st.button(":material/save: Simpan", key="btn_add"):
         ticker = new_ticker.strip().upper()
         if not ticker.endswith(".JK"):
             ticker += ".JK"
@@ -41,7 +41,7 @@ with st.expander("➕ Tambah Saham", expanded=False):
 holdings = load_portfolio()
 
 if not holdings:
-    st.info("📂 Portofolio kosong. Tambahkan saham di atas untuk memulai.")
+    st.info(":material/folder_open: Portofolio kosong. Tambahkan saham di atas untuk memulai.")
     show_disclosure()
     st.stop()
 
@@ -53,7 +53,7 @@ with st.spinner("Memuat data harga terkini..."):
 metrics = calculate_portfolio_metrics(holdings, quotes)
 
 # ── Portfolio Summary ──
-st.subheader("📊 Ringkasan Portofolio")
+st.subheader(":material/query_stats: Ringkasan Portofolio")
 
 s1, s2, s3, s4 = st.columns(4)
 with s1:
@@ -73,7 +73,7 @@ with s4:
 st.divider()
 
 # ── Holdings Table ──
-st.subheader("📋 Daftar Holding")
+st.subheader(":material/list_alt: Daftar Holding")
 
 for item in metrics["holdings"]:
     col_logo, col_info, col_val, col_ret, col_edit, col_del = st.columns([0.5, 2, 1.5, 1.5, 0.5, 0.5])
@@ -100,7 +100,7 @@ for item in metrics["holdings"]:
         <span style="color:{color};">Rp{item['return_value']:,.0f}</span>
         """, unsafe_allow_html=True)
     with col_edit:
-        with st.popover("✏️"):
+        with st.popover(":material/edit:"):
             st.markdown(f"**Edit {item['ticker']}**")
             edit_shares = st.number_input("Jumlah Lembar", min_value=1, value=int(item["shares"]), key=f"es_{item['ticker']}")
             edit_price = st.number_input("Harga Rata-rata", min_value=1.0, value=float(item["avg_price"]), key=f"ep_{item['ticker']}")
@@ -108,14 +108,14 @@ for item in metrics["holdings"]:
                 update_holding(item["ticker"], edit_shares, edit_price)
                 st.rerun()
     with col_del:
-        if st.button("🗑️", key=f"del_{item['ticker']}"):
+        if st.button(":material/delete:", key=f"del_{item['ticker']}"):
             remove_holding(item["ticker"])
             st.rerun()
 
 st.divider()
 
 # ── Allocation Pie ──
-st.subheader("📊 Alokasi Portofolio")
+st.subheader(":material/pie_chart: Alokasi Portofolio")
 
 col_pie, col_sector = st.columns(2)
 
@@ -164,7 +164,7 @@ with col_sector:
 st.divider()
 
 # ── Portfolio Risk ──
-st.subheader("⚠️ Profil Risiko Portofolio")
+st.subheader(":material/warning: Profil Risiko Portofolio")
 
 risk_data = []
 for h in metrics["holdings"]:
@@ -192,12 +192,12 @@ if risk_data:
 st.divider()
 
 # ── AI Portfolio Analysis ──
-st.subheader("🤖 Analisis AI Portofolio")
+st.subheader(":material/smart_toy: Analisis AI Portofolio")
 
 if not GROQ_API_KEY:
     st.warning("⚠️ GROQ_API_KEY belum diset.")
 else:
-    if st.button("🔍 Generate Analisis Portofolio", key="btn_port_ai"):
+    if st.button(":material/manage_search: Generate Analisis Portofolio", key="btn_port_ai"):
         with st.spinner("AI sedang menganalisis portofolio Anda..."):
             result = portfolio_analysis(
                 metrics["holdings"],

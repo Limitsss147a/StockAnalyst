@@ -11,11 +11,11 @@ from lib.macro import (
 from lib.charts import render_price_chart
 from lib.groq_analyst import macro_pulse
 
-st.title("🌍 Makroekonomi Indonesia")
+st.title(":material/travel_explore: Makroekonomi Indonesia")
 st.caption("Data dan analisis kondisi makroekonomi Indonesia")
 
 # ── Live Market Indicators ──
-st.subheader("📊 Indikator Pasar Live")
+st.subheader(":material/monitoring: Indikator Pasar Live")
 
 with st.spinner("Memuat data pasar..."):
     snapshot = get_live_macro_snapshot()
@@ -46,7 +46,7 @@ for i, (name, data) in enumerate(indicators[:4]):
 st.divider()
 
 # ── Indonesian Macro Data ──
-st.subheader("🏦 Data Makroekonomi Indonesia")
+st.subheader(":material/account_balance: Data Makroekonomi Indonesia")
 st.caption("Sumber: Bank Indonesia, BPS (data terakhir yang tersedia)")
 
 macro_cols = st.columns(3)
@@ -64,7 +64,7 @@ for i, (name, data) in enumerate(items):
 st.divider()
 
 # ── Exchange Rate Chart ──
-st.subheader("💱 Kurs USD/IDR")
+st.subheader(":material/currency_exchange: Kurs USD/IDR")
 
 period_fx = st.radio("Periode", ["1M", "3M", "6M", "1Y", "3Y", "5Y"], index=3, horizontal=True, key="fx_period")
 period_map_fx = {"1M": "1mo", "3M": "3mo", "6M": "6mo", "1Y": "1y", "3Y": "3y", "5Y": "5y"}
@@ -78,7 +78,7 @@ if not fx_hist.empty:
 st.divider()
 
 # ── IHSG Historical Chart ──
-st.subheader("🇮🇩 IHSG Historis")
+st.subheader(":material/location_on: IHSG Historis")
 
 period_ihsg = st.radio("Periode IHSG", ["1M", "3M", "6M", "1Y", "3Y", "5Y", "Max"], index=3, horizontal=True, key="ihsg_macro_period")
 period_map_ihsg = {"1M": "1mo", "3M": "3mo", "6M": "6mo", "1Y": "1y", "3Y": "3y", "5Y": "5y", "Max": "max"}
@@ -92,12 +92,12 @@ if not ihsg_hist.empty:
 st.divider()
 
 # ── AI Macro Pulse ──
-st.subheader("🤖 Analisis Makro AI")
+st.subheader(":material/smart_toy: Analisis Makro AI")
 
 if not GROQ_API_KEY:
     st.warning("⚠️ GROQ_API_KEY belum diset. Tambahkan ke file `.env` untuk mengaktifkan analisis AI.")
 else:
-    if st.button("🔍 Generate Analisis Makro", key="btn_macro"):
+    if st.button(":material/manage_search: Generate Analisis Makro", key="btn_macro"):
         # Compile indicators for AI
         indicators_dict = {}
         for name, data in INDO_MACRO_DATA.items():

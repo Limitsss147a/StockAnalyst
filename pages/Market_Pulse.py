@@ -14,7 +14,7 @@ from lib.charts import render_price_chart, render_sparkline, render_sector_heatm
 from lib.news import get_market_news
 from lib.logos import get_logo_html
 
-st.title("💹 Market Pulse")
+st.title(":material/vital_signs: Market Pulse")
 st.caption("Pantauan pasar saham Indonesia & global")
 
 # ── Period selector ──
@@ -23,7 +23,7 @@ selected_period = st.radio("Periode", periods, index=6, horizontal=True, key="mp
 yf_period = PERIOD_MAP[selected_period]
 
 # ── Index / Asset Cards Grid ──
-st.subheader("📊 Indeks & Aset Utama")
+st.subheader(":material/monitoring: Indeks & Aset Utama")
 
 tickers_list = list(INDEX_TICKERS.keys())
 
@@ -68,7 +68,7 @@ for row_start in range(0, len(tickers_list), 5):
 st.divider()
 
 # ── Big IHSG Chart ──
-st.subheader("🇮🇩 IHSG (Jakarta Composite Index)")
+st.subheader(":material/location_on: IHSG (Jakarta Composite Index)")
 view = st.radio("Tampilan", CHART_VIEWS, horizontal=True, key="ihsg_view")
 
 ihsg_hist = get_history("^JKSE", yf_period)
@@ -83,7 +83,7 @@ else:
 st.divider()
 
 # ── Sector Heatmap ──
-st.subheader("🏭 Kinerja Sektor")
+st.subheader(":material/factory: Kinerja Sektor")
 
 with st.spinner("Memuat data sektor..."):
     sector_perf = {}
@@ -103,7 +103,7 @@ if sector_perf:
 st.divider()
 
 # ── Top Gainers / Losers ──
-st.subheader("📈 Top Movers")
+st.subheader(":material/moving: Top Movers")
 
 with st.spinner("Memuat data saham..."):
     stock_quotes = get_quotes_bulk(TOP_IDX_STOCKS[:30])
@@ -114,7 +114,7 @@ sorted_by_change = sorted(valid_quotes, key=lambda x: x.get("pctChange", 0), rev
 col_gain, col_lose, col_active = st.columns(3)
 
 with col_gain:
-    st.markdown("**🟢 Top Gainers**")
+    st.markdown("**:material/trending_up: Top Gainers**")
     for q in sorted_by_change[:5]:
         ticker = q["ticker"]
         logo = get_logo_html(ticker, size=28)
@@ -134,7 +134,7 @@ with col_gain:
         """, unsafe_allow_html=True)
 
 with col_lose:
-    st.markdown("**🔴 Top Losers**")
+    st.markdown("**:material/trending_down: Top Losers**")
     for q in sorted_by_change[-5:][::-1]:
         ticker = q["ticker"]
         logo = get_logo_html(ticker, size=28)
@@ -154,7 +154,7 @@ with col_lose:
         """, unsafe_allow_html=True)
 
 with col_active:
-    st.markdown("**⚡ Paling Aktif (Volume)**")
+    st.markdown("**:material/bolt: Paling Aktif (Volume)**")
     sorted_by_vol = sorted(valid_quotes, key=lambda x: x.get("volume", 0), reverse=True)
     for q in sorted_by_vol[:5]:
         ticker = q["ticker"]
@@ -178,7 +178,7 @@ with col_active:
 st.divider()
 
 # ── Headlines ──
-st.subheader("📰 Berita Terkini")
+st.subheader(":material/feed: Berita Terkini")
 news = get_market_news(max_items=5)
 
 if news:

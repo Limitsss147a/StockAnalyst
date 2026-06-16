@@ -8,11 +8,11 @@ from lib.screener import screen_stocks, PRESETS
 from lib.market_data import TOP_IDX_STOCKS, format_idr, color_for_change
 from lib.logos import get_logo_html
 
-st.title("🔎 Screener Saham")
+st.title(":material/screen_search_desktop: Screener Saham")
 st.caption("Filter saham IDX berdasarkan kriteria teknikal dan fundamental")
 
 # ── Preset Filters ──
-st.subheader("⚡ Preset Cepat")
+st.subheader(":material/bolt: Preset Cepat")
 preset_cols = st.columns(len(PRESETS))
 selected_preset = None
 for i, (name, _) in enumerate(PRESETS.items()):
@@ -21,10 +21,10 @@ for i, (name, _) in enumerate(PRESETS.items()):
             selected_preset = name
 
 # ── Custom Filters ──
-with st.expander("🔧 Filter Kustom", expanded=selected_preset is None):
+with st.expander(":material/tune: Filter Kustom", expanded=selected_preset is None):
     fc1, fc2 = st.columns(2)
     with fc1:
-        st.markdown("**📉 Teknikal**")
+        st.markdown("**:material/stacked_line_chart: Teknikal**")
         rsi_range = st.slider("RSI Range", 0, 100, (0, 100), key="rsi_range")
         sma_filter = st.selectbox("Posisi vs SMA", [
             "Semua", "Di atas SMA-20", "Di bawah SMA-20",
@@ -34,7 +34,7 @@ with st.expander("🔧 Filter Kustom", expanded=selected_preset is None):
         vol_surge = st.checkbox("Volume Surge (> 2x rata-rata)", key="vol_surge")
 
     with fc2:
-        st.markdown("**💰 Fundamental**")
+        st.markdown("**:material/account_balance: Fundamental**")
         pe_range = st.slider("P/E Range", 0, 100, (0, 100), key="pe_range")
         min_roe = st.number_input("Min ROE (%)", value=0.0, step=1.0, key="min_roe")
         min_mcap = st.number_input("Min Market Cap (Rp Miliar)", value=0.0, step=100.0, key="min_mcap")
@@ -71,13 +71,13 @@ else:
 # ── Run Screener ──
 st.divider()
 
-if st.button("🔍 Jalankan Screener", type="primary", use_container_width=True, key="btn_screen"):
+if st.button(":material/search: Jalankan Screener", type="primary", use_container_width=True, key="btn_screen"):
     with st.spinner("Memindai saham... (ini mungkin memakan waktu 30-60 detik)"):
         results = screen_stocks(TOP_IDX_STOCKS[:35], **kwargs)
 
     if results:
         st.success(f"Ditemukan **{len(results)}** saham yang sesuai kriteria.")
-        st.subheader("📊 Hasil Screener")
+        st.subheader(":material/fact_check: Hasil Screener")
 
         # Sort options
         sort_by = st.selectbox("Urutkan berdasarkan", [
@@ -118,12 +118,12 @@ if st.button("🔍 Jalankan Screener", type="primary", use_container_width=True,
             with col_tech:
                 rsi = r.get("rsi", 0)
                 rsi_color = "#ff4757" if rsi > 70 else ("#00d4aa" if rsi < 30 else "#888")
-                sma20_icon = "✅" if r.get("above_sma20") else ("❌" if r.get("above_sma20") is False else "—")
-                sma200_icon = "✅" if r.get("above_sma200") else ("❌" if r.get("above_sma200") is False else "—")
+                sma20_icon = ":material/check_circle:" if r.get("above_sma20") else (":material/cancel:" if r.get("above_sma20") is False else "—")
+                sma200_icon = ":material/check_circle:" if r.get("above_sma200") else (":material/cancel:" if r.get("above_sma200") is False else "—")
                 st.markdown(f"""
                 RSI: <span style="color:{rsi_color};font-weight:600;">{rsi:.0f}</span> · 
                 SMA20: {sma20_icon} · SMA200: {sma200_icon}
-                {"🔥 Vol Surge" if r.get("vol_surge") else ""}
+                {":material/local_fire_department: Vol Surge" if r.get("vol_surge") else ""}
                 """, unsafe_allow_html=True)
 
             with col_fund:

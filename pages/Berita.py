@@ -6,9 +6,9 @@ setup_page("Berita – Analis Saham")
 import streamlit as st
 from lib.news import get_market_news, get_ticker_news
 
-st.title("📰 Berita Pasar Saham")
+st.title(":material/newspaper: Berita Pasar Saham")
 
-tab_market, tab_ticker = st.tabs(["📢 Berita Pasar", "🔍 Berita per Saham"])
+tab_market, tab_ticker = st.tabs([":material/campaign: Berita Pasar", ":material/manage_search: Berita per Saham"])
 
 with tab_market:
     st.subheader("Berita Pasar Terkini")
@@ -47,7 +47,7 @@ with tab_ticker:
     if not ticker.endswith(".JK") and not ticker.startswith("^"):
         ticker += ".JK"
 
-    if st.button("🔍 Cari Berita", key="btn_search_news"):
+    if st.button(":material/search: Cari Berita", key="btn_search_news"):
         with st.spinner(f"Memuat berita {ticker}..."):
             ticker_news = get_ticker_news(ticker, max_items=15)
 

@@ -12,7 +12,7 @@ from lib.groq_analyst import timeframe_analysis
 from lib.logos import get_logo_html
 from lib.charts import _GREEN, _RED
 
-st.title("🤖 Auto Analisis Teknikal")
+st.title(":material/robot_2: Auto Analisis Teknikal")
 st.caption("Analisis teknikal otomatis dengan indikator yang disesuaikan per timeframe")
 
 # ── Input ──
@@ -48,7 +48,7 @@ st.markdown(f"""
 st.divider()
 
 # ── Run Analysis ──
-if st.button("🚀 Jalankan Analisis", type="primary", use_container_width=True):
+if st.button(":material/rocket_launch: Jalankan Analisis", type="primary", use_container_width=True):
     st.session_state["run_aa_ticker"] = ticker
     st.session_state["run_aa_tf"] = selected_tf
 
@@ -126,7 +126,7 @@ if st.session_state.get("run_aa_ticker") == ticker and st.session_state.get("run
     # ══════════════════════════════════════════════
     # ── Detected Signals ──
     # ══════════════════════════════════════════════
-    st.subheader("📡 Sinyal Terdeteksi")
+    st.subheader(":material/cell_tower: Sinyal Terdeteksi")
 
     bullish_signals = [s for s in report["signals"] if s["type"] == "bullish"]
     bearish_signals = [s for s in report["signals"] if s["type"] == "bearish"]
@@ -134,7 +134,7 @@ if st.session_state.get("run_aa_ticker") == ticker and st.session_state.get("run
 
     sig_col1, sig_col2 = st.columns(2)
     with sig_col1:
-        st.markdown("**🟢 Sinyal Bullish**")
+        st.markdown("**:material/trending_up: Sinyal Bullish**")
         if bullish_signals:
             for s in bullish_signals:
                 st.markdown(f"""
@@ -147,7 +147,7 @@ if st.session_state.get("run_aa_ticker") == ticker and st.session_state.get("run
             st.caption("Tidak ada sinyal bullish")
 
     with sig_col2:
-        st.markdown("**🔴 Sinyal Bearish**")
+        st.markdown("**:material/trending_down: Sinyal Bearish**")
         if bearish_signals:
             for s in bearish_signals:
                 st.markdown(f"""
@@ -160,7 +160,7 @@ if st.session_state.get("run_aa_ticker") == ticker and st.session_state.get("run
             st.caption("Tidak ada sinyal bearish")
 
     if neutral_signals:
-        st.markdown("**⚪ Sinyal Netral**")
+        st.markdown("**:material/remove: Sinyal Netral**")
         for s in neutral_signals:
             st.markdown(f"""
             <div style="padding:6px 12px;margin:3px 0;border-left:3px solid #888;background:rgba(136,136,136,0.05);border-radius:6px;">
@@ -173,7 +173,7 @@ if st.session_state.get("run_aa_ticker") == ticker and st.session_state.get("run
     # ══════════════════════════════════════════════
     # ── Technical Chart ──
     # ══════════════════════════════════════════════
-    st.subheader("📈 Chart Teknikal")
+    st.subheader(":material/show_chart: Chart Teknikal")
 
     ind = report["indicators_series"]
     x = hist.index
@@ -256,7 +256,7 @@ if st.session_state.get("run_aa_ticker") == ticker and st.session_state.get("run
     # ══════════════════════════════════════════════
     # ── Indicator Summary Cards ──
     # ══════════════════════════════════════════════
-    st.subheader("📊 Ringkasan Indikator")
+    st.subheader(":material/summarize: Ringkasan Indikator")
 
     ic1, ic2, ic3, ic4, ic5 = st.columns(5)
     rsi_val = vals["rsi"]
@@ -302,14 +302,14 @@ if st.session_state.get("run_aa_ticker") == ticker and st.session_state.get("run
     # ══════════════════════════════════════════════
     # ── Support / Resistance & Risk Levels ──
     # ══════════════════════════════════════════════
-    st.subheader("📐 Level & Manajemen Risiko")
+    st.subheader(":material/straighten: Level & Manajemen Risiko")
 
     lv1, lv2 = st.columns(2)
     levels = report["levels"]
     with lv1:
         st.markdown(f"""
         <div class="gauge-card">
-            <h4>📍 Level Kunci</h4>
+            <h4>:material/push_pin: Level Kunci</h4>
             <p>🟢 <b>Resistance 1:</b> Rp{levels['resistance_1']:,.0f}</p>
             <p>🟢 <b>Resistance 2 (BB Upper):</b> Rp{levels['resistance_2']:,.0f}</p>
             <p>🔴 <b>Support 1 (SMA-Fast):</b> Rp{levels['support_1']:,.0f}</p>
@@ -320,7 +320,7 @@ if st.session_state.get("run_aa_ticker") == ticker and st.session_state.get("run
     with lv2:
         st.markdown(f"""
         <div class="gauge-card">
-            <h4>⚠️ Level Edukatif (Berdasarkan ATR)</h4>
+            <h4>:material/warning: Level Edukatif (Berdasarkan ATR)</h4>
             <p style="color:#888;font-size:0.85rem;">Level ini dihitung otomatis dari ATR, bukan rekomendasi.</p>
             <p>🛑 <b>Stop Loss Area:</b> Rp{levels['stop_loss_suggest']:,.0f} <span style="color:#888;">(−1.5x ATR)</span></p>
             <p>🎯 <b>Take Profit Area:</b> Rp{levels['take_profit_suggest']:,.0f} <span style="color:#888;">(+2x ATR)</span></p>
@@ -334,14 +334,14 @@ if st.session_state.get("run_aa_ticker") == ticker and st.session_state.get("run
     # ══════════════════════════════════════════════
     # ── AI Analysis ──
     # ══════════════════════════════════════════════
-    st.subheader("🤖 Analisis AI")
+    st.subheader(":material/smart_toy: Analisis AI")
 
     if not GROQ_API_KEY:
         st.warning("⚠️ GROQ_API_KEY belum diset. Tambahkan ke file `.env`.")
     else:
         ai_state_key = f"aa_ai_result_{ticker}_{selected_tf}"
         
-        if st.button(f"🧠 Generate Analisis AI ({selected_tf})", key="btn_ai_auto"):
+        if st.button(f":material/psychology: Generate Analisis AI ({selected_tf})", key="btn_ai_auto"):
             with st.spinner("AI sedang menganalisis..."):
                 result = timeframe_analysis(ticker, name, selected_tf, report, fundamentals)
                 st.session_state[ai_state_key] = result

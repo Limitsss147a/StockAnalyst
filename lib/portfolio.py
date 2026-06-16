@@ -48,6 +48,19 @@ def add_holding(ticker: str, shares: float, avg_price: float):
     save_portfolio(holdings)
 
 
+def update_holding(ticker: str, shares: float, avg_price: float):
+    """Overwrite an existing holding's shares and avg_price."""
+    holdings = load_portfolio()
+    for h in holdings:
+        if h["ticker"].upper() == ticker.upper():
+            h["shares"] = shares
+            h["avg_price"] = avg_price
+            save_portfolio(holdings)
+            return
+    # If not found, add it
+    add_holding(ticker, shares, avg_price)
+
+
 def remove_holding(ticker: str):
     """Remove a holding by ticker."""
     holdings = load_portfolio()

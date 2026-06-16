@@ -5,7 +5,7 @@ setup_page("Portofolio – Analis Saham")
 
 import streamlit as st
 import plotly.graph_objects as go
-from lib.portfolio import load_portfolio, save_portfolio, add_holding, remove_holding, calculate_portfolio_metrics
+from lib.portfolio import load_portfolio, save_portfolio, add_holding, remove_holding, update_holding, calculate_portfolio_metrics
 from lib.market_data import get_quotes_bulk, format_idr, color_for_change
 from lib.risk import compute_risk_score, portfolio_risk_score
 from lib.charts import render_gauge
@@ -76,7 +76,7 @@ st.divider()
 st.subheader("📋 Daftar Holding")
 
 for item in metrics["holdings"]:
-    col_logo, col_info, col_val, col_ret, col_del = st.columns([0.5, 2, 1.5, 1.5, 0.5])
+    col_logo, col_info, col_val, col_ret, col_edit, col_del = st.columns([0.5, 2, 1.5, 1.5, 0.5, 0.5])
     color = color_for_change(item["return_pct"])
     logo = get_logo_html(item["ticker"], size=36)
 
@@ -99,6 +99,14 @@ for item in metrics["holdings"]:
         </span>  
         <span style="color:{color};">Rp{item['return_value']:,.0f}</span>
         """, unsafe_allow_html=True)
+    with col_edit:
+        with st.popover("✏️"):
+            st.markdown(f"**Edit {item['ticker']}**")
+            edit_shares = st.number_input("Jumlah Lembar", min_value=1, value=int(item["shares"]), key=f"es_{item['ticker']}")
+            edit_price = st.number_input("Harga Rata-rata", min_value=1.0, value=float(item["avg_price"]), key=f"ep_{item['ticker']}")
+            if st.button("Simpan", key=f"save_{item['ticker']}", type="primary"):
+                update_holding(item["ticker"], edit_shares, edit_price)
+                st.rerun()
     with col_del:
         if st.button("🗑️", key=f"del_{item['ticker']}"):
             remove_holding(item["ticker"])

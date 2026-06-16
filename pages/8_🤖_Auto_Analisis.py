@@ -49,6 +49,10 @@ st.divider()
 
 # ── Run Analysis ──
 if st.button("🚀 Jalankan Analisis", type="primary", use_container_width=True):
+    st.session_state["run_aa_ticker"] = ticker
+    st.session_state["run_aa_tf"] = selected_tf
+
+if st.session_state.get("run_aa_ticker") == ticker and st.session_state.get("run_aa_tf") == selected_tf:
 
     with st.spinner(f"Memuat data dan menganalisis {ticker} ({selected_tf})..."):
         quote = get_quote(ticker)
@@ -335,9 +339,14 @@ if st.button("🚀 Jalankan Analisis", type="primary", use_container_width=True)
     if not GROQ_API_KEY:
         st.warning("⚠️ GROQ_API_KEY belum diset. Tambahkan ke file `.env`.")
     else:
+        ai_state_key = f"aa_ai_result_{ticker}_{selected_tf}"
+        
         if st.button(f"🧠 Generate Analisis AI ({selected_tf})", key="btn_ai_auto"):
             with st.spinner("AI sedang menganalisis..."):
                 result = timeframe_analysis(ticker, name, selected_tf, report, fundamentals)
-            st.markdown(result)
+                st.session_state[ai_state_key] = result
+                
+        if ai_state_key in st.session_state:
+            st.markdown(st.session_state[ai_state_key])
 
 show_disclosure()

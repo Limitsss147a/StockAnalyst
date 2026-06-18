@@ -1,6 +1,6 @@
 """🔍 Analisis Saham – Full stock analyzer with technicals, financials, and AI."""
 
-from lib.config import setup_page, show_disclosure
+from lib.config import setup_page, show_disclosure, stream_text
 setup_page("Analisis Saham – Analis Saham")
 
 import streamlit as st
@@ -9,7 +9,7 @@ from lib.market_data import (
     get_stock_fundamentals, get_previous_close,
     format_idr, format_pct, format_number,
 )
-from lib.charts import render_price_chart, render_gauge, render_technical_chart, CHART_VIEWS
+from lib.charts import render_price_chart, render_gauge, render_technical_chart, CHART_VIEWS, INTERACTIVE_CONFIG
 from lib.signals import compute_technical_score, compute_fundamental_score, at_a_glance
 from lib.technicals import get_all_indicators
 from lib.financials import (
@@ -89,7 +89,7 @@ if not hist.empty:
     baseline = get_previous_close(ticker) if selected_period == "1D" else None
     fig = render_price_chart(hist, view=view, title=f"{ticker}", baseline_price=baseline)
     if fig:
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, config=INTERACTIVE_CONFIG)
 else:
     st.warning("Data historis tidak tersedia.")
 
@@ -122,7 +122,7 @@ if not hist.empty and len(hist) >= 15:
         title=f"Indikator Teknikal – {ticker}",
     )
     if fig_tech_chart:
-        st.plotly_chart(fig_tech_chart, use_container_width=True)
+        st.plotly_chart(fig_tech_chart, use_container_width=True, config=INTERACTIVE_CONFIG)
 
     # Quick indicator values
     rsi_val = indicators["rsi"].iloc[-1] if "rsi" in indicators else None
@@ -356,13 +356,29 @@ with tab_bull:
     if st.button("Generate Bull/Bear Case", key="btn_bull"):
         with st.spinner("AI sedang menganalisis..."):
             result = bull_bear_case(ticker, name, fundamentals, quote)
-        st.markdown(result)
+            st.session_state["sa_bull_result"] = result
+            st.session_state["sa_bull_new"] = True
+            
+    if "sa_bull_result" in st.session_state:
+        if st.session_state.get("sa_bull_new"):
+            st.write_stream(stream_text(st.session_state["sa_bull_result"]))
+            st.session_state["sa_bull_new"] = False
+        else:
+            st.markdown(st.session_state["sa_bull_result"])
 
 with tab_deep:
     if st.button("Generate Analisis Mendalam", key="btn_deep"):
         with st.spinner("AI sedang menganalisis secara mendalam..."):
             result = deep_analysis(ticker, name, fundamentals, quote)
-        st.markdown(result)
+            st.session_state["sa_deep_result"] = result
+            st.session_state["sa_deep_new"] = True
+            
+    if "sa_deep_result" in st.session_state:
+        if st.session_state.get("sa_deep_new"):
+            st.write_stream(stream_text(st.session_state["sa_deep_result"]))
+            st.session_state["sa_deep_new"] = False
+        else:
+            st.markdown(st.session_state["sa_deep_result"])
 
 with tab_news:
     news = get_ticker_news(ticker, max_items=10)

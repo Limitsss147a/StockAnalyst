@@ -7,6 +7,20 @@ from plotly.subplots import make_subplots
 
 CHART_VIEWS = ["Performance", "Price", "Candlestick", "Area"]
 
+INTERACTIVE_CONFIG = {
+    'scrollZoom': True,
+    'displayModeBar': True,
+    'displaylogo': False,
+    'modeBarButtonsToAdd': [
+        'drawline',
+        'drawopenpath',
+        'drawclosedpath',
+        'drawcircle',
+        'drawrect',
+        'eraseshape'
+    ]
+}
+
 _GREEN = "#00d4aa"
 _RED = "#ff4757"
 _GREEN_FILL = "rgba(0,212,170,0.12)"

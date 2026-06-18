@@ -170,6 +170,22 @@ CUSTOM_CSS = """
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(0, 212, 170, 0.5) !important;
     }
+    
+    /* Skeleton Loading Animation */
+    @keyframes shimmer {
+        0% { background-position: -1000px 0; }
+        100% { background-position: 1000px 0; }
+    }
+    .skeleton-box {
+        display: inline-block;
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(90deg, rgba(30,41,59,0.5) 25%, rgba(51,65,85,0.8) 50%, rgba(30,41,59,0.5) 75%);
+        background-size: 1000px 100%;
+        animation: shimmer 2s infinite linear;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
 </style>
 """
 
@@ -191,3 +207,11 @@ def show_disclosure():
     """Show the disclosure footer."""
     import streamlit as st
     st.markdown(DISCLOSURE)
+
+def stream_text(text: str, delay: float = 0.03):
+    """Generator to simulate typing animation."""
+    import time
+    words = text.split(" ")
+    for word in words:
+        yield word + " "
+        time.sleep(delay)

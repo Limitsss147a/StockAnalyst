@@ -1,6 +1,6 @@
 """🤖 Auto Analisis – Automated technical analysis by timeframe."""
 
-from lib.config import setup_page, show_disclosure, GROQ_API_KEY
+from lib.config import setup_page, show_disclosure, GROQ_API_KEY, stream_text
 setup_page("Auto Analisis – Analis Saham")
 
 import streamlit as st
@@ -10,7 +10,7 @@ from lib.market_data import get_quote, get_history, get_stock_fundamentals, form
 from lib.auto_analysis import TIMEFRAMES, run_auto_analysis
 from lib.groq_analyst import timeframe_analysis
 from lib.logos import get_logo_html
-from lib.charts import _GREEN, _RED
+from lib.charts import _GREEN, _RED, INTERACTIVE_CONFIG
 
 st.title(":material/robot_2: Auto Analisis Teknikal")
 st.caption("Analisis teknikal otomatis dengan indikator yang disesuaikan per timeframe")
@@ -249,7 +249,8 @@ if st.session_state.get("run_aa_ticker") == ticker and st.session_state.get("run
     fig.update_xaxes(gridcolor="rgba(255,255,255,0.04)")
     fig.update_yaxes(gridcolor="rgba(255,255,255,0.04)")
 
-    st.plotly_chart(fig, use_container_width=True)
+    fig.update_layout(dragmode="pan", newshape=dict(line_color='#00d4aa', line_width=2))
+    st.plotly_chart(fig, use_container_width=True, config=INTERACTIVE_CONFIG)
 
     st.divider()
 
@@ -345,8 +346,13 @@ if st.session_state.get("run_aa_ticker") == ticker and st.session_state.get("run
             with st.spinner("AI sedang menganalisis..."):
                 result = timeframe_analysis(ticker, name, selected_tf, report, fundamentals)
                 st.session_state[ai_state_key] = result
+                st.session_state[ai_state_key + "_new"] = True
                 
         if ai_state_key in st.session_state:
-            st.markdown(st.session_state[ai_state_key])
+            if st.session_state.get(ai_state_key + "_new"):
+                st.write_stream(stream_text(st.session_state[ai_state_key]))
+                st.session_state[ai_state_key + "_new"] = False
+            else:
+                st.markdown(st.session_state[ai_state_key])
 
 show_disclosure()

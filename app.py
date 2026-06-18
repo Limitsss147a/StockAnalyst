@@ -19,6 +19,7 @@ pages = {
     "Riset": [
         st.Page("pages/Makroekonomi.py", title="Makroekonomi", icon=":material/public:"),
         st.Page("pages/Berita.py", title="Berita Pasar", icon=":material/newspaper:"),
+        st.Page("pages/Kalender_CA.py", title="Kalender CA", icon=":material/event_note:"),
     ],
     "Personal": [
         st.Page("pages/Portofolio.py", title="Portofolio", icon=":material/account_balance_wallet:"),

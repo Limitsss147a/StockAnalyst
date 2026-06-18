@@ -31,6 +31,28 @@ def get_corporate_actions(ticker_symbol):
             except:
                 pass
         
+        # 3. Calendar & Estimations (Earnings, RUPS, Right Issue)
+        calendar = t.calendar
+        earnings_date = None
+        ex_div_date = None
+        if isinstance(calendar, dict):
+            if "Earnings Date" in calendar and calendar["Earnings Date"]:
+                ed = calendar["Earnings Date"][0]
+                earnings_date = ed.strftime("%Y-%m-%d") if hasattr(ed, "strftime") else str(ed)
+            if "Ex-Dividend Date" in calendar and calendar["Ex-Dividend Date"]:
+                exd = calendar["Ex-Dividend Date"]
+                ex_div_date = exd.strftime("%Y-%m-%d") if hasattr(exd, "strftime") else str(exd)
+                
+        # Estimate RUPS (AGM) - typically 2-4 weeks before Ex-Dividend, or just an estimation
+        rups_est = None
+        if ex_div_date:
+            try:
+                exd_obj = datetime.datetime.strptime(ex_div_date, "%Y-%m-%d")
+                rups_obj = exd_obj - datetime.timedelta(days=20)
+                rups_est = rups_obj.strftime("%Y-%m-%d")
+            except:
+                pass
+        
         # Estimate Next Dividend (simple logic based on last year)
         next_div_est = None
         if not divs.empty and len(divs) > 0:
@@ -54,11 +76,21 @@ def get_corporate_actions(ticker_symbol):
         return {
             "dividends": divs,
             "splits": splits,
-            "next_div_est": next_div_est
+            "next_div_est": next_div_est,
+            "earnings_date": earnings_date,
+            "rups_est": rups_est,
+            "right_issue": None # Not available in standard free API
         }
     except Exception as e:
         print(f"Error fetching CA for {ticker_symbol}: {e}")
-        return {"dividends": pd.Series(), "splits": pd.Series(), "next_div_est": None}
+        return {
+            "dividends": pd.Series(), 
+            "splits": pd.Series(), 
+            "next_div_est": None,
+            "earnings_date": None,
+            "rups_est": None,
+            "right_issue": None
+        }
 
 def format_ca_dataframe(series, ca_type="Dividen"):
     """Convert yfinance Series to a nicely formatted DataFrame."""

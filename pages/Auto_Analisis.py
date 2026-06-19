@@ -11,6 +11,7 @@ from lib.auto_analysis import TIMEFRAMES, run_auto_analysis
 from lib.groq_analyst import timeframe_analysis
 from lib.logos import get_logo_html
 from lib.charts import _GREEN, _RED, INTERACTIVE_CONFIG
+from lib.backtester import run_simple_backtest
 
 st.title(":material/robot_2: Auto Analisis Teknikal")
 st.caption("Analisis teknikal otomatis dengan indikator yang disesuaikan per timeframe")
@@ -329,6 +330,47 @@ if st.session_state.get("run_aa_ticker") == ticker and st.session_state.get("run
             <p>📊 <b>Risk/Reward Ratio:</b> 1 : {2/1.5:.1f}</p>
         </div>
         """, unsafe_allow_html=True)
+
+    st.divider()
+
+    # ══════════════════════════════════════════════
+    # ── Historical Backtesting ──
+    # ══════════════════════════════════════════════
+    st.subheader(":material/history: Backtesting Historis")
+    st.caption("Uji akurasi sinyal indikator di masa lalu. Berapa persentase kemenangan (Win Rate) jika Anda mengikuti sinyal ini?")
+    
+    bt_signal = st.selectbox("Pilih Sinyal untuk Diuji", ["MACD Golden Cross", "RSI Oversold (Naik di atas 30)", "Price Crosses SMA-50"])
+    bt_days = st.slider("Target Waktu Evaluasi (Hari ke depan)", 1, 30, 10, help="Setelah sinyal muncul, kita akan mengecek apakah harga lebih tinggi X hari kemudian.")
+    
+    if st.button("Jalankan Backtest", type="secondary"):
+        sig_map = {
+            "MACD Golden Cross": "MACD_GOLDEN_CROSS",
+            "RSI Oversold (Naik di atas 30)": "RSI_OVERSOLD",
+            "Price Crosses SMA-50": "SMA_CROSSOVER"
+        }
+        with st.spinner("Menghitung simulasi backtest..."):
+            bt_results = run_simple_backtest(hist, pd.DataFrame(report["indicators_series"]), sig_map[bt_signal], bt_days)
+        
+        btc1, btc2, btc3, btc4 = st.columns(4)
+        with btc1:
+            st.metric("Total Sinyal Ditemukan", bt_results["total"])
+        with btc2:
+            win_color = "normal" if bt_results["win_rate"] >= 50 else "inverse"
+            st.metric("Win Rate", f"{bt_results['win_rate']:.1f}%", delta_color=win_color)
+        with btc3:
+            st.metric("Wins / Losses", f"{bt_results['wins']} / {bt_results['losses']}")
+        with btc4:
+            st.metric("Rata-rata Profit per Trade", f"{bt_results['avg_return']:.2f}%")
+            
+        if bt_results["total"] > 0:
+            if bt_results["win_rate"] >= 60:
+                st.success(f"Berdasarkan data historis {selected_tf}, sinyal **{bt_signal}** terbukti **Cukup Akurat** ({bt_results['win_rate']:.1f}%) pada saham {ticker}.")
+            elif bt_results["win_rate"] <= 40:
+                st.error(f"Sinyal **{bt_signal}** ternyata **Kurang Akurat** ({bt_results['win_rate']:.1f}%) untuk saham {ticker} dalam periode ini.")
+            else:
+                st.info(f"Sinyal **{bt_signal}** memberikan hasil seperti tebak koin (sekitar 50%) pada saham ini.")
+        else:
+            st.warning("Tidak ada sinyal yang terjadi pada periode waktu ini.")
 
     st.divider()
 

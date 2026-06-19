@@ -23,6 +23,7 @@ pages = {
     ],
     "Personal": [
         st.Page("pages/Portofolio.py", title="Portofolio", icon=":material/account_balance_wallet:"),
+        st.Page("pages/Watchlist.py", title="Watchlist & Alert", icon=":material/notifications_active:"),
     ]
 }
 

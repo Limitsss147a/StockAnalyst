@@ -11,7 +11,6 @@ from lib.auto_analysis import TIMEFRAMES, run_auto_analysis
 from lib.groq_analyst import timeframe_analysis
 from lib.logos import get_logo_html
 from lib.charts import _GREEN, _RED, INTERACTIVE_CONFIG
-from lib.backtester import run_simple_backtest
 
 st.title(":material/robot_2: Auto Analisis Teknikal")
 st.caption("Analisis teknikal otomatis dengan indikator yang disesuaikan per timeframe")
@@ -339,38 +338,91 @@ if st.session_state.get("run_aa_ticker") == ticker and st.session_state.get("run
     st.subheader(":material/history: Backtesting Historis")
     st.caption("Uji akurasi sinyal indikator di masa lalu. Berapa persentase kemenangan (Win Rate) jika Anda mengikuti sinyal ini?")
     
-    bt_signal = st.selectbox("Pilih Sinyal untuk Diuji", ["MACD Golden Cross", "RSI Oversold (Naik di atas 30)", "Price Crosses SMA-50"])
-    bt_days = st.slider("Target Waktu Evaluasi (Hari ke depan)", 1, 30, 10, help="Setelah sinyal muncul, kita akan mengecek apakah harga lebih tinggi X hari kemudian.")
+    import pandas as pd
+    from lib.backtester import SIGNAL_TYPES
     
-    if st.button("Jalankan Backtest", type="secondary"):
-        sig_map = {
-            "MACD Golden Cross": "MACD_GOLDEN_CROSS",
-            "RSI Oversold (Naik di atas 30)": "RSI_OVERSOLD",
-            "Price Crosses SMA-50": "SMA_CROSSOVER"
-        }
-        with st.spinner("Menghitung simulasi backtest..."):
-            bt_results = run_simple_backtest(hist, pd.DataFrame(report["indicators_series"]), sig_map[bt_signal], bt_days)
+    bt_col1, bt_col2 = st.columns(2)
+    with bt_col1:
+        bt_signal_label = st.selectbox(
+            "Pilih Sinyal untuk Diuji",
+            list(SIGNAL_TYPES.values()),
+            help="Pilih jenis sinyal teknikal yang ingin divalidasi akurasinya."
+        )
+    with bt_col2:
+        bt_days = st.slider("Target Evaluasi (Hari)", 3, 30, 10, 
+                            help="Setelah sinyal muncul, harga dievaluasi X hari kemudian.")
+    
+    # Reverse-lookup signal key
+    sig_key = [k for k, v in SIGNAL_TYPES.items() if v == bt_signal_label][0]
+    
+    if st.button(":material/science: Jalankan Backtest", type="secondary", use_container_width=True):
+        # Use longer history for backtesting (2 years)
+        from lib.market_data import get_history as bt_get_history
+        bt_hist = bt_get_history(ticker, "2y")
         
-        btc1, btc2, btc3, btc4 = st.columns(4)
+        with st.spinner(f"Menghitung backtest {bt_signal_label} pada {ticker}..."):
+            from lib.backtester import run_backtest
+            bt_results = run_backtest(bt_hist, sig_key, bt_days)
+        
+        st.session_state["bt_results"] = bt_results
+        st.session_state["bt_signal_label"] = bt_signal_label
+        st.session_state["bt_ticker"] = ticker
+        st.session_state["bt_days"] = bt_days
+    
+    # Display results from session state
+    if "bt_results" in st.session_state and st.session_state.get("bt_ticker") == ticker:
+        bt_results = st.session_state["bt_results"]
+        bt_signal_label = st.session_state["bt_signal_label"]
+        bt_days = st.session_state["bt_days"]
+        
+        btc1, btc2, btc3, btc4, btc5 = st.columns(5)
         with btc1:
-            st.metric("Total Sinyal Ditemukan", bt_results["total"])
+            st.metric("Total Sinyal", bt_results["total"])
         with btc2:
-            win_color = "normal" if bt_results["win_rate"] >= 50 else "inverse"
-            st.metric("Win Rate", f"{bt_results['win_rate']:.1f}%", delta_color=win_color)
+            wr = bt_results["win_rate"]
+            delta_text = "Akurat" if wr >= 60 else ("Netral" if wr >= 40 else "Buruk")
+            st.metric("Win Rate", f"{wr:.1f}%", delta=delta_text, delta_color="normal" if wr >= 50 else "inverse")
         with btc3:
-            st.metric("Wins / Losses", f"{bt_results['wins']} / {bt_results['losses']}")
+            st.metric("Win / Loss", f"{bt_results['wins']} / {bt_results['losses']}")
         with btc4:
-            st.metric("Rata-rata Profit per Trade", f"{bt_results['avg_return']:.2f}%")
+            avg_r = bt_results["avg_return"]
+            st.metric("Avg Return", f"{avg_r:+.2f}%", delta_color="normal" if avg_r >= 0 else "inverse")
+        with btc5:
+            st.metric("Max Drawdown", f"{bt_results['max_drawdown']:.2f}%")
             
         if bt_results["total"] > 0:
-            if bt_results["win_rate"] >= 60:
-                st.success(f"Berdasarkan data historis {selected_tf}, sinyal **{bt_signal}** terbukti **Cukup Akurat** ({bt_results['win_rate']:.1f}%) pada saham {ticker}.")
-            elif bt_results["win_rate"] <= 40:
-                st.error(f"Sinyal **{bt_signal}** ternyata **Kurang Akurat** ({bt_results['win_rate']:.1f}%) untuk saham {ticker} dalam periode ini.")
+            wr = bt_results["win_rate"]
+            avg_r = bt_results["avg_return"]
+            
+            if wr >= 70 and avg_r > 0:
+                st.success(f"🏆 Sinyal **{bt_signal_label}** terbukti **Sangat Akurat** (Win Rate {wr:.1f}%, Avg Return {avg_r:+.2f}%) pada {ticker.replace('.JK', '')} dalam 2 tahun terakhir.")
+            elif wr >= 55 and avg_r > 0:
+                st.success(f"✅ Sinyal **{bt_signal_label}** menunjukkan hasil **Cukup Baik** (Win Rate {wr:.1f}%, Avg Return {avg_r:+.2f}%).")
+            elif wr <= 40 or avg_r < -1:
+                st.error(f"❌ Sinyal **{bt_signal_label}** ternyata **Kurang Efektif** (Win Rate {wr:.1f}%, Avg Return {avg_r:+.2f}%) untuk {ticker.replace('.JK', '')}.")
             else:
-                st.info(f"Sinyal **{bt_signal}** memberikan hasil seperti tebak koin (sekitar 50%) pada saham ini.")
+                st.info(f"⚖️ Sinyal **{bt_signal_label}** memberikan hasil **Netral** (Win Rate {wr:.1f}%) — tidak cukup konsisten.")
+                
+            # Trade Log Table
+            if bt_results["trades"]:
+                with st.expander(f":material/table_chart: Lihat Detail {bt_results['total']} Trade"):
+                    trade_df = pd.DataFrame(bt_results["trades"])
+                    trade_df.columns = ["Tanggal", "Entry (Rp)", "Exit (Rp)", "Return (%)", "Max DD (%)", "Hasil"]
+                    
+                    st.dataframe(
+                        trade_df,
+                        use_container_width=True,
+                        hide_index=True,
+                        column_config={
+                            "Return (%)": st.column_config.NumberColumn(format="%.2f%%"),
+                            "Max DD (%)": st.column_config.NumberColumn(format="%.2f%%"),
+                            "Entry (Rp)": st.column_config.NumberColumn(format="Rp %,.0f"),
+                            "Exit (Rp)": st.column_config.NumberColumn(format="Rp %,.0f"),
+                            "Hasil": st.column_config.TextColumn(),
+                        }
+                    )
         else:
-            st.warning("Tidak ada sinyal yang terjadi pada periode waktu ini.")
+            st.warning(f"Tidak ada sinyal **{bt_signal_label}** yang terjadi pada {ticker.replace('.JK', '')} dalam 2 tahun terakhir.")
 
     st.divider()
 

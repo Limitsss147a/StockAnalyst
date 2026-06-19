@@ -18,5 +18,15 @@
         "ticker": "CBRE.JK",
         "target_buy": 0,
         "target_sell": 0
+    },
+    {
+        "ticker": "BNBR.JK",
+        "target_buy": 0,
+        "target_sell": 0
+    },
+    {
+        "ticker": "EMTK.JK",
+        "target_buy": 0,
+        "target_sell": 0
     }
 ]

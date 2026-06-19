@@ -46,26 +46,26 @@ def render_market_data():
         pct = q.get("pctChange", 0)
         price = q.get("price", 0)
 
-            # Sparkline
-            hist = get_history(ticker, yf_period)
-            sparkline_fig = None
-            if not hist.empty:
-                closes = hist["Close"].dropna().tolist()
-                baseline = get_previous_close(ticker) if selected_period == "1D" and closes else None
-                if baseline and closes:
-                    closes = [baseline] + closes
-                sparkline_fig = render_sparkline(closes, base_price=baseline)
+        # Sparkline
+        hist = get_history(ticker, yf_period)
+        sparkline_fig = None
+        if not hist.empty:
+            closes = hist["Close"].dropna().tolist()
+            baseline = get_previous_close(ticker) if selected_period == "1D" and closes else None
+            if baseline and closes:
+                closes = [baseline] + closes
+            sparkline_fig = render_sparkline(closes, base_price=baseline)
 
-            with col:
-                st.markdown(f"""
-                <div class="metric-card" style="text-align:center; padding:12px;">
-                    <p style="font-size:0.8rem; color:#888; margin:0;">{info['emoji']} {info['name']}</p>
-                    <p style="font-size:1.1rem; font-weight:700; margin:4px 0;">{price:,.2f}</p>
-                    <p style="color:{color}; font-weight:600; margin:0;">{pct:+.2f}%</p>
-                </div>
-                """, unsafe_allow_html=True)
-                if sparkline_fig:
-                    st.plotly_chart(sparkline_fig, use_container_width=True, config={"displayModeBar": False})
+        with col:
+            st.markdown(f"""
+            <div class="metric-card" style="text-align:center; padding:12px;">
+                <p style="font-size:0.8rem; color:#888; margin:0;">{info['emoji']} {info['name']}</p>
+                <p style="font-size:1.1rem; font-weight:700; margin:4px 0;">{price:,.2f}</p>
+                <p style="color:{color}; font-weight:600; margin:0;">{pct:+.2f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+            if sparkline_fig:
+                st.plotly_chart(sparkline_fig, use_container_width=True, config={"displayModeBar": False})
 
     st.divider()
 

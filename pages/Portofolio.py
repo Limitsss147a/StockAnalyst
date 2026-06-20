@@ -75,6 +75,17 @@ st.divider()
 # ── Holdings Table ──
 st.subheader(":material/list_alt: Daftar Holding")
 
+import pandas as pd
+df_port = pd.DataFrame(metrics["holdings"])
+if not df_port.empty:
+    csv = df_port.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label=":material/download: Download CSV Portofolio",
+        data=csv,
+        file_name='portofolio.csv',
+        mime='text/csv',
+    )
+
 for item in metrics["holdings"]:
     col_logo, col_info, col_val, col_ret, col_edit, col_del = st.columns([0.5, 2, 1.5, 1.5, 0.5, 0.5])
     color = color_for_change(item["return_pct"])

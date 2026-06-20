@@ -94,6 +94,16 @@ if st.button(":material/search: Jalankan Screener", type="primary", use_containe
         sort_key, sort_desc = sort_map.get(sort_by, ("pctChange", True))
         results.sort(key=lambda x: x.get(sort_key, 0) or 0, reverse=sort_desc)
 
+        # Download CSV
+        import pandas as pd
+        csv = pd.DataFrame(results).to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label=":material/download: Download CSV",
+            data=csv,
+            file_name='screener_results.csv',
+            mime='text/csv',
+        )
+
         # Results display
         for r in results:
             col_logo, col_info, col_price, col_tech, col_fund = st.columns([0.4, 1.8, 1.2, 1.3, 1.3])

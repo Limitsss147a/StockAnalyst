@@ -147,7 +147,9 @@ CUSTOM_CSS = """
     }
 
     /* Section Label and Thin Divider */
-    div[data-testid="stSidebarNav"] ul li > div:first-child {
+    /* Targeting only the group headers and NOT the menu item links */
+    div[data-testid="stSidebarNavGroup"] > div:first-child,
+    div[data-testid="stSidebarNav"] > ul > li > div:first-child:not(:has(a)) {
         text-transform: uppercase !important;
         letter-spacing: 1.5px !important;
         font-weight: 700 !important;
@@ -159,30 +161,47 @@ CUSTOM_CSS = """
         margin-bottom: 8px !important;
     }
 
-    /* Contextual Badges */
-    div[data-testid="stSidebarNav"] a[href*="Auto_Analisis"] span:last-child::after {
+    /* Reset link text to normal in case of override */
+    div[data-testid="stSidebarNav"] a {
+        text-transform: none !important;
+        letter-spacing: normal !important;
+        font-weight: normal !important;
+        position: relative !important;
+    }
+
+    /* Contextual Badges - absolute positioned to the right */
+    div[data-testid="stSidebarNav"] a[href*="Auto_Analisis"]::after {
         content: "AI";
-        background: linear-gradient(135deg, #a855f7, #6366f1);
-        color: white;
-        font-size: 0.6rem;
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 212, 170, 0.15);
+        color: #00d4aa;
+        border: 1px solid rgba(0, 212, 170, 0.2);
+        font-size: 0.65rem;
         font-weight: 700;
         padding: 2px 6px;
-        border-radius: 10px;
-        margin-left: 8px;
-        vertical-align: middle;
-        box-shadow: 0 2px 6px rgba(168, 85, 247, 0.4);
+        border-radius: 4px;
+        line-height: 1;
     }
     
-    div[data-testid="stSidebarNav"] a[href*="Watchlist"] span:last-child::after {
-        content: "";
-        display: inline-block;
-        width: 8px;
-        height: 8px;
+    div[data-testid="stSidebarNav"] a[href*="Watchlist"]::after {
+        content: "3";
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
         background: #ff4757;
-        border-radius: 50%;
-        margin-left: 8px;
-        vertical-align: middle;
-        box-shadow: 0 0 8px rgba(255, 71, 87, 0.6);
+        color: white;
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 12px;
+        min-width: 18px;
+        text-align: center;
+        box-shadow: 0 0 8px rgba(255, 71, 87, 0.4);
+        line-height: 1.2;
     }
     
     h1, h2, h3 { 

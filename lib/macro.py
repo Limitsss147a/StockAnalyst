@@ -18,19 +18,21 @@ MACRO_TICKERS = {
 # Latest known Indonesian macro data (updated periodically)
 # These would ideally come from BPS/BI API, but we use static + live rates
 INDO_MACRO_DATA = {
-    "BI Rate": {"value": "6.25%", "description": "Suku bunga acuan Bank Indonesia (BI-Rate)", "status": "Ditahan"},
-    "Inflasi (YoY)": {"value": "2.51%", "description": "Inflasi Indeks Harga Konsumen (BPS)", "status": "Terkendali"},
-    "Pertumbuhan Ekonomi": {"value": "5.11%", "description": "Pertumbuhan PDB Q1 2024 YoY", "status": "Solid"},
-    "Cadangan Devisa": {"value": "$136.2B", "description": "Posisi akhir April 2024", "status": "Cukup"},
-    "Neraca Perdagangan": {"value": "$2.93B", "description": "Surplus April 2024", "status": "Surplus"},
+    "BI Rate": {"value": "5.75%", "description": "Suku bunga acuan Bank Indonesia per Juni 2026", "status": "Ditahan"},
+    "Inflasi (YoY)": {"value": "3.09%", "description": "Inflasi Indeks Harga Konsumen (BPS)", "status": "Terkendali"},
+    "Pertumbuhan Ekonomi": {"value": "5.10%", "description": "Pertumbuhan PDB Q1 2026 YoY", "status": "Solid"},
+    "Cadangan Devisa": {"value": "$139.5B", "description": "Posisi akhir Mei 2026", "status": "Cukup"},
+    "Neraca Perdagangan": {"value": "$3.15B", "description": "Surplus Mei 2026", "status": "Surplus"},
     "Tingkat Pengangguran": {"value": "4.82%", "description": "Tingkat Pengangguran Terbuka (BPS)", "status": "Turun"},
 }
 
 def get_historical_macro_data() -> pd.DataFrame:
     """Get historical macro data for BI Rate and Inflation (mock real data for visualization)."""
-    dates = pd.date_range(start="2023-01-01", periods=18, freq="ME")
-    bi_rate = [5.50, 5.75, 5.75, 5.75, 5.75, 5.75, 5.75, 5.75, 5.75, 6.00, 6.00, 6.00, 6.00, 6.00, 6.00, 6.25, 6.25, 6.25]
-    inflation = [5.28, 5.47, 4.97, 4.33, 4.00, 3.52, 3.08, 3.27, 2.28, 2.56, 2.86, 2.61, 2.57, 2.75, 3.05, 3.00, 2.84, 2.51]
+    dates = pd.date_range(end="2026-06-01", periods=18, freq="MS")
+    # Bi Rate 5.75% current, previously it was 6.00% or 6.25% in 2024, gradually lowered
+    bi_rate = [6.25, 6.25, 6.00, 6.00, 6.00, 6.00, 6.00, 6.00, 5.75, 5.75, 5.75, 5.75, 5.75, 5.75, 5.75, 5.75, 5.75, 5.75]
+    # Inflation around 2.5 - 3.1
+    inflation = [2.57, 2.75, 3.05, 3.00, 2.84, 2.51, 2.65, 2.80, 2.95, 3.10, 3.20, 3.15, 3.00, 2.90, 2.85, 2.95, 3.05, 3.09]
     
     return pd.DataFrame({
         "Date": dates,

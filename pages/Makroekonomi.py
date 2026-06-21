@@ -6,9 +6,10 @@ setup_page("Makroekonomi – Analis Saham")
 import streamlit as st
 from lib.macro import (
     INDO_MACRO_DATA, get_exchange_rate_history, get_ihsg_history,
-    get_live_macro_snapshot, render_exchange_rate_chart,
+    get_live_macro_snapshot, render_exchange_rate_chart, get_historical_macro_data
 )
-from lib.charts import render_price_chart
+from lib.charts import render_price_chart, render_sparkline
+import plotly.graph_objects as go
 from lib.groq_analyst import macro_pulse
 
 st.title(":material/travel_explore: Makroekonomi Indonesia")
@@ -20,28 +21,38 @@ st.subheader(":material/monitoring: Indikator Pasar Live")
 with st.spinner("Memuat data pasar..."):
     snapshot = get_live_macro_snapshot()
 
-cols = st.columns(4)
+cols = st.columns(5)
 indicators = list(snapshot.items())
-for i, (name, data) in enumerate(indicators[:4]):
+for i, (name, data) in enumerate(indicators[:5]):
     with cols[i]:
         price = data.get("price", 0)
         pct = data.get("change_pct", 0)
+        history = data.get("history", [])
+        
         # Format based on indicator type
         if "IDR" in name:
             price_str = f"Rp{price:,.0f}"
         elif "IHSG" in name:
             price_str = f"{price:,.2f}"
+        elif "Yield" in name:
+            price_str = f"{price:,.3f}%"
         else:
             price_str = f"${price:,.2f}"
 
         color = "#00d4aa" if pct >= 0 else "#ff4757"
+        
         st.markdown(f"""
-        <div class="metric-card" style="text-align:center;">
+        <div class="metric-card" style="text-align:center; padding: 15px 10px;">
             <p style="color:#888;font-size:0.85rem;margin-bottom:4px;">{name}</p>
             <p style="font-size:1.3rem;font-weight:700;margin:4px 0;">{price_str}</p>
-            <p style="color:{color};font-weight:600;margin:0;">{pct:+.2f}%</p>
+            <p style="color:{color};font-weight:600;margin:0 0 10px 0;font-size:0.9rem;">{pct:+.2f}%</p>
         </div>
         """, unsafe_allow_html=True)
+        
+        if history and len(history) > 1:
+            fig_spark = render_sparkline(history, base_price=history[0], width=120, height=40)
+            if fig_spark:
+                st.plotly_chart(fig_spark, use_container_width=True, config={'displayModeBar': False})
 
 st.divider()
 
@@ -53,13 +64,48 @@ macro_cols = st.columns(3)
 items = list(INDO_MACRO_DATA.items())
 for i, (name, data) in enumerate(items):
     with macro_cols[i % 3]:
+        status_color = "#00d4aa" if data['status'] in ["Ditahan", "Terkendali", "Solid", "Cukup", "Surplus", "Turun"] else "#f59e0b"
         st.markdown(f"""
-        <div class="metric-card">
-            <p style="font-weight:600;margin-bottom:4px;">{name}</p>
-            <p style="font-size:1.3rem;font-weight:700;color:#00d4aa;margin:4px 0;">{data['value']}</p>
+        <div class="metric-card" style="position: relative;">
+            <span style="position:absolute; top:15px; right:15px; background:rgba(0,212,170,0.1); color:{status_color}; padding:2px 8px; border-radius:12px; font-size:0.75rem; font-weight:600;">{data['status']}</span>
+            <p style="font-weight:600;margin-bottom:4px;color:#ccc;">{name}</p>
+            <p style="font-size:1.5rem;font-weight:700;color:#fff;margin:4px 0;">{data['value']}</p>
             <p style="color:#888;font-size:0.8rem;margin:0;">{data['description']}</p>
         </div>
         """, unsafe_allow_html=True)
+
+st.divider()
+
+# ── BI Rate & Inflation Chart ──
+st.subheader(":material/timeline: BI Rate vs Inflasi (Historis)")
+st.caption("Perbandingan kebijakan moneter vs tingkat inflasi Indonesia")
+
+macro_df = get_historical_macro_data()
+if not macro_df.empty:
+    fig_macro = go.Figure()
+    fig_macro.add_trace(go.Scatter(
+        x=macro_df.index, y=macro_df["BI Rate (%)"],
+        name="BI Rate", mode="lines+markers",
+        line=dict(color="#3b82f6", width=2.5, shape="hv"),
+        marker=dict(size=6)
+    ))
+    fig_macro.add_trace(go.Scatter(
+        x=macro_df.index, y=macro_df["Inflasi YoY (%)"],
+        name="Inflasi (YoY)", mode="lines+markers",
+        line=dict(color="#f59e0b", width=2.5),
+        marker=dict(size=6)
+    ))
+    
+    fig_macro.update_layout(
+        template="plotly_dark", height=400,
+        margin=dict(l=10, r=10, t=30, b=10),
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        hovermode="x unified", font=dict(family="Inter"),
+        legend=dict(orientation="h", y=1.1, x=0.5, xanchor="center"),
+        yaxis=dict(title="Persentase (%)", gridcolor="rgba(255,255,255,0.04)"),
+        xaxis=dict(gridcolor="rgba(255,255,255,0.04)")
+    )
+    st.plotly_chart(fig_macro, use_container_width=True)
 
 st.divider()
 

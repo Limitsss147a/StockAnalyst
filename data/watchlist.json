@@ -28,5 +28,20 @@
         "ticker": "EMTK.JK",
         "target_buy": 0,
         "target_sell": 0
+    },
+    {
+        "ticker": "BUMI.JK",
+        "target_buy": 0,
+        "target_sell": 0
+    },
+    {
+        "ticker": "DEWA.JK",
+        "target_buy": 0,
+        "target_sell": 0
+    },
+    {
+        "ticker": "TPIA.JK",
+        "target_buy": 0,
+        "target_sell": 0
     }
 ]

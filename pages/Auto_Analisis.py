@@ -8,7 +8,8 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from lib.market_data import get_quote, get_history, get_stock_fundamentals, format_idr
 from lib.auto_analysis import TIMEFRAMES, run_auto_analysis
-from lib.groq_analyst import timeframe_analysis
+from lib.bandarmology import run_bandarmology_analysis
+from lib.groq_analyst import timeframe_analysis, bandarmology_analysis
 from lib.logos import get_logo_html
 from lib.charts import _GREEN, _RED, INTERACTIVE_CONFIG
 
@@ -427,9 +428,303 @@ if st.session_state.get("run_aa_ticker") == ticker and st.session_state.get("run
     st.divider()
 
     # ══════════════════════════════════════════════
+    # ── Bandarmology Analysis ──
+    # ══════════════════════════════════════════════
+    st.subheader(":material/account_balance: Analisis Bandarmologi")
+    st.caption("Tracking pergerakan big money (bandar) menggunakan indikator money flow, OBV, dan pola akumulasi/distribusi")
+
+    with st.spinner("Menganalisis pergerakan bandar..."):
+        bandar_report = run_bandarmology_analysis(hist, config)
+
+    if "error" in bandar_report:
+        st.warning(bandar_report["error"])
+    else:
+        bandar_overall = bandar_report["overall"]
+        bandar_confidence = bandar_report["confidence"]
+        bandar_colors = {
+            "AKUMULASI": "#00d4aa",
+            "DISTRIBUSI": "#ff4757",
+            "NETRAL": "#f59e0b"
+        }
+        bandar_icons = {
+            "AKUMULASI": "💰",
+            "DISTRIBUSI": "🚨",
+            "NETRAL": "⚖️"
+        }
+        b_color = bandar_colors.get(bandar_overall, "#888")
+        b_icon = bandar_icons.get(bandar_overall, "")
+
+        # ── Bandar Signal Badge ──
+        bc1, bc2, bc3, bc4 = st.columns([1.5, 1, 1, 1])
+        with bc1:
+            st.markdown(f"""
+            <div class="gauge-card" style="text-align:center;border:2px solid {b_color};">
+                <p style="font-size:2.5rem;margin:0;">{b_icon}</p>
+                <h2 style="color:{b_color};margin:8px 0;font-size:1.5rem;">{bandar_overall}</h2>
+                <p style="color:#888;font-size:0.85rem;">{bandar_report['conclusion']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with bc2:
+            st.markdown(f"""
+            <div class="metric-card" style="text-align:center;">
+                <p style="color:#888;font-size:0.8rem;">Confidence</p>
+                <p style="font-size:2rem;font-weight:700;color:{b_color};margin:8px 0;">{bandar_confidence}%</p>
+                <p style="color:#888;font-size:0.75rem;">Akum: {bandar_report['accum_points']:.1f} · Dist: {bandar_report['distrib_points']:.1f}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with bc3:
+            bandar_score = bandar_report['values']['bandar_score']
+            bs_color = "#00d4aa" if bandar_score > 0 else ("#ff4757" if bandar_score < 0 else "#888")
+            st.markdown(f"""
+            <div class="metric-card" style="text-align:center;">
+                <p style="color:#888;font-size:0.8rem;">Bandar Score</p>
+                <p style="font-size:2rem;font-weight:700;color:{bs_color};margin:8px 0;">{bandar_score:+.0f}</p>
+                <p style="color:#888;font-size:0.75rem;">-100 (distribusi) ↔ +100 (akumulasi)</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with bc4:
+            mfi_val = bandar_report['values']['mfi']
+            mfi_color = "#ff4757" if mfi_val > 80 else ("#00d4aa" if mfi_val < 20 else "#f59e0b" if mfi_val > 60 else "#888")
+            st.markdown(f"""
+            <div class="metric-card" style="text-align:center;">
+                <p style="color:#888;font-size:0.8rem;">Money Flow Index</p>
+                <p style="font-size:2rem;font-weight:700;color:{mfi_color};margin:8px 0;">{mfi_val:.1f}</p>
+                <p style="color:#888;font-size:0.75rem;">{'Overbought' if mfi_val > 80 else 'Oversold' if mfi_val < 20 else 'Normal'}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # ── Bandar Signals ──
+        st.markdown("")
+        accum_signals = [s for s in bandar_report["signals"] if s["type"] == "accumulation"]
+        distrib_signals = [s for s in bandar_report["signals"] if s["type"] == "distribution"]
+        neutral_signals_b = [s for s in bandar_report["signals"] if s["type"] == "neutral"]
+
+        bsig1, bsig2 = st.columns(2)
+        with bsig1:
+            st.markdown("**:material/add_circle: Sinyal Akumulasi (Beli)**")
+            if accum_signals:
+                for s in accum_signals:
+                    st.markdown(f"""
+                    <div style="padding:8px 12px;margin:4px 0;border-left:3px solid #00d4aa;background:rgba(0,212,170,0.05);border-radius:6px;">
+                        <b style="color:#00d4aa;">{s['name']}</b><br>
+                        <span style="color:#aaa;font-size:0.85rem;">{s['detail']}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.caption("Tidak ada sinyal akumulasi")
+
+        with bsig2:
+            st.markdown("**:material/remove_circle: Sinyal Distribusi (Jual)**")
+            if distrib_signals:
+                for s in distrib_signals:
+                    st.markdown(f"""
+                    <div style="padding:8px 12px;margin:4px 0;border-left:3px solid #ff4757;background:rgba(255,71,87,0.05);border-radius:6px;">
+                        <b style="color:#ff4757;">{s['name']}</b><br>
+                        <span style="color:#aaa;font-size:0.85rem;">{s['detail']}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.caption("Tidak ada sinyal distribusi")
+
+        if neutral_signals_b:
+            for s in neutral_signals_b:
+                st.markdown(f"""
+                <div style="padding:6px 12px;margin:3px 0;border-left:3px solid #f59e0b;background:rgba(245,158,11,0.05);border-radius:6px;">
+                    <b style="color:#f59e0b;">{s['name']}</b> – <span style="color:#aaa;">{s['detail']}</span>
+                </div>
+                """, unsafe_allow_html=True)
+
+        # ── Money Flow Chart ──
+        st.markdown("")
+        st.markdown("**:material/waterfall_chart: Chart Bandarmologi**")
+
+        b_ind = bandar_report["indicators_series"]
+        x = hist.index
+
+        from plotly.subplots import make_subplots
+        import plotly.graph_objects as go
+
+        fig_bandar = make_subplots(
+            rows=4, cols=1, shared_xaxes=True,
+            vertical_spacing=0.03,
+            row_heights=[0.3, 0.25, 0.25, 0.2],
+            subplot_titles=["Harga + Volume Bandar", "Money Flow Index (MFI)",
+                            "On-Balance Volume (OBV)", "Chaikin Money Flow (CMF)"]
+        )
+
+        # Panel 1: Candlestick + Big Volume markers
+        fig_bandar.add_trace(go.Candlestick(
+            x=x, open=hist["Open"], high=hist["High"],
+            low=hist["Low"], close=hist["Close"],
+            increasing_line_color=_GREEN, decreasing_line_color=_RED,
+            showlegend=False,
+        ), row=1, col=1)
+
+        # Mark accumulation days
+        big_money_data = bandar_report["big_money"]
+        accum_mask = big_money_data["accum_mask"]
+        distrib_mask = big_money_data["distrib_mask"]
+
+        if accum_mask.any():
+            accum_dates = hist.index[accum_mask]
+            accum_prices = hist["Low"][accum_mask] * 0.98
+            fig_bandar.add_trace(go.Scatter(
+                x=accum_dates, y=accum_prices,
+                mode="markers", name="Akumulasi",
+                marker=dict(symbol="triangle-up", size=12, color="#00d4aa",
+                           line=dict(width=1, color="white")),
+                hovertemplate="Akumulasi<br>%{x}<extra></extra>",
+            ), row=1, col=1)
+
+        if distrib_mask.any():
+            distrib_dates = hist.index[distrib_mask]
+            distrib_prices = hist["High"][distrib_mask] * 1.02
+            fig_bandar.add_trace(go.Scatter(
+                x=distrib_dates, y=distrib_prices,
+                mode="markers", name="Distribusi",
+                marker=dict(symbol="triangle-down", size=12, color="#ff4757",
+                           line=dict(width=1, color="white")),
+                hovertemplate="Distribusi<br>%{x}<extra></extra>",
+            ), row=1, col=1)
+
+        # Panel 2: MFI
+        mfi_colors = []
+        for v in b_ind["mfi"]:
+            if v > 80:
+                mfi_colors.append("#ff4757")
+            elif v < 20:
+                mfi_colors.append("#00d4aa")
+            else:
+                mfi_colors.append("#a855f7")
+
+        fig_bandar.add_trace(go.Scatter(
+            x=x, y=b_ind["mfi"], name="MFI", mode="lines",
+            line=dict(color="#a855f7", width=1.5),
+        ), row=2, col=1)
+        fig_bandar.add_hline(y=80, line_dash="dash", line_color="rgba(255,71,87,0.5)", row=2, col=1)
+        fig_bandar.add_hline(y=20, line_dash="dash", line_color="rgba(0,212,170,0.5)", row=2, col=1)
+        fig_bandar.add_hline(y=50, line_dash="dot", line_color="rgba(255,255,255,0.15)", row=2, col=1)
+        fig_bandar.add_hrect(y0=80, y1=100, fillcolor="rgba(255,71,87,0.05)", line_width=0, row=2, col=1)
+        fig_bandar.add_hrect(y0=0, y1=20, fillcolor="rgba(0,212,170,0.05)", line_width=0, row=2, col=1)
+        fig_bandar.update_yaxes(title_text="MFI", range=[0, 100], row=2, col=1)
+
+        # Panel 3: OBV + OBV SMA
+        fig_bandar.add_trace(go.Scatter(
+            x=x, y=b_ind["obv"], name="OBV", mode="lines",
+            line=dict(color="#3b82f6", width=1.5),
+        ), row=3, col=1)
+        fig_bandar.add_trace(go.Scatter(
+            x=x, y=b_ind["obv_sma"], name="OBV SMA(20)", mode="lines",
+            line=dict(color="#f59e0b", width=1, dash="dash"),
+        ), row=3, col=1)
+        fig_bandar.update_yaxes(title_text="OBV", row=3, col=1)
+
+        # Panel 4: CMF
+        cmf_vals = b_ind["cmf"]
+        cmf_colors = [_GREEN if v >= 0 else _RED for v in cmf_vals]
+        fig_bandar.add_trace(go.Bar(
+            x=x, y=cmf_vals, marker_color=cmf_colors, opacity=0.7,
+            showlegend=False, name="CMF",
+        ), row=4, col=1)
+        fig_bandar.add_hline(y=0, line_color="rgba(255,255,255,0.2)", row=4, col=1)
+        fig_bandar.update_yaxes(title_text="CMF", row=4, col=1)
+
+        fig_bandar.update_layout(
+            template="plotly_dark", height=800,
+            margin=dict(l=10, r=10, t=30, b=10),
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+            xaxis_rangeslider_visible=False, hovermode="x unified",
+            font=dict(family="Inter"),
+            legend=dict(orientation="h", y=1.02, x=0.5, xanchor="center"),
+            dragmode="pan",
+        )
+        fig_bandar.update_xaxes(gridcolor="rgba(255,255,255,0.04)")
+        fig_bandar.update_yaxes(gridcolor="rgba(255,255,255,0.04)")
+
+        st.plotly_chart(fig_bandar, use_container_width=True, config=INTERACTIVE_CONFIG)
+
+        # ── Money Flow Indicator Cards ──
+        st.markdown("")
+        st.markdown("**:material/monitoring: Indikator Money Flow**")
+
+        bv = bandar_report["values"]
+        bic1, bic2, bic3, bic4, bic5 = st.columns(5)
+
+        with bic1:
+            cmf_v = bv["cmf"]
+            cmf_c = "#00d4aa" if cmf_v > 0.05 else ("#ff4757" if cmf_v < -0.05 else "#888")
+            st.markdown(f"""
+            <div class="metric-card" style="text-align:center;">
+                <p style="color:#888;font-size:0.8rem;">Chaikin MF</p>
+                <p style="font-size:1.4rem;font-weight:700;color:{cmf_c};">{cmf_v:.3f}</p>
+                <p style="color:#888;font-size:0.7rem;">{'Beli 🟢' if cmf_v > 0 else 'Jual 🔴'}</p>
+            </div>""", unsafe_allow_html=True)
+        with bic2:
+            fi_v = bv["force_index"]
+            fi_c = "#00d4aa" if fi_v > 0 else "#ff4757"
+            st.markdown(f"""
+            <div class="metric-card" style="text-align:center;">
+                <p style="color:#888;font-size:0.8rem;">Force Index</p>
+                <p style="font-size:1.4rem;font-weight:700;color:{fi_c};">{fi_v:,.0f}</p>
+                <p style="color:#888;font-size:0.7rem;">{'Bulls 🐂' if fi_v > 0 else 'Bears 🐻'}</p>
+            </div>""", unsafe_allow_html=True)
+        with bic3:
+            obv_above = bv["obv"] > bv["obv_sma"]
+            obv_c = "#00d4aa" if obv_above else "#ff4757"
+            st.markdown(f"""
+            <div class="metric-card" style="text-align:center;">
+                <p style="color:#888;font-size:0.8rem;">OBV Trend</p>
+                <p style="font-size:1.4rem;font-weight:700;color:{obv_c};">{'↗ Naik' if obv_above else '↘ Turun'}</p>
+                <p style="color:#888;font-size:0.7rem;">vs SMA(20)</p>
+            </div>""", unsafe_allow_html=True)
+        with bic4:
+            big_money_info = bandar_report["big_money"]
+            acc_d = big_money_info["accumulation_days"]
+            dis_d = big_money_info["distribution_days"]
+            ratio_text = f"{acc_d}A / {dis_d}D"
+            ratio_c = "#00d4aa" if acc_d > dis_d else ("#ff4757" if dis_d > acc_d else "#f59e0b")
+            st.markdown(f"""
+            <div class="metric-card" style="text-align:center;">
+                <p style="color:#888;font-size:0.8rem;">Akum vs Dist</p>
+                <p style="font-size:1.4rem;font-weight:700;color:{ratio_c};">{ratio_text}</p>
+                <p style="color:#888;font-size:0.7rem;">Hari volume besar</p>
+            </div>""", unsafe_allow_html=True)
+        with bic5:
+            vol_5_20 = bv["volume_avg_5"] / max(bv["volume_avg_20"], 1)
+            vol_c = "#f59e0b" if vol_5_20 > 1.5 else ("#888" if vol_5_20 > 0.7 else "#3b82f6")
+            st.markdown(f"""
+            <div class="metric-card" style="text-align:center;">
+                <p style="color:#888;font-size:0.8rem;">Vol Trend</p>
+                <p style="font-size:1.4rem;font-weight:700;color:{vol_c};">{vol_5_20:.1f}x</p>
+                <p style="color:#888;font-size:0.7rem;">5d vs 20d avg</p>
+            </div>""", unsafe_allow_html=True)
+
+        # ── Bandarmology AI Analysis ──
+        st.markdown("")
+        if GROQ_API_KEY:
+            ai_bandar_key = f"aa_bandar_ai_{ticker}_{selected_tf}"
+
+            if st.button(":material/psychology: Generate Analisis AI Bandarmologi", key="btn_ai_bandar"):
+                with st.spinner("AI sedang menganalisis pergerakan bandar..."):
+                    bandar_ai_result = bandarmology_analysis(
+                        ticker, name, bandar_report, report, selected_tf
+                    )
+                    st.session_state[ai_bandar_key] = bandar_ai_result
+                    st.session_state[ai_bandar_key + "_new"] = True
+
+            if ai_bandar_key in st.session_state:
+                if st.session_state.get(ai_bandar_key + "_new"):
+                    st.write_stream(stream_text(st.session_state[ai_bandar_key]))
+                    st.session_state[ai_bandar_key + "_new"] = False
+                else:
+                    st.markdown(st.session_state[ai_bandar_key])
+
+    st.divider()
+
+    # ══════════════════════════════════════════════
     # ── AI Analysis ──
     # ══════════════════════════════════════════════
-    st.subheader(":material/smart_toy: Analisis AI")
+    st.subheader(":material/smart_toy: Analisis AI Teknikal")
 
     if not GROQ_API_KEY:
         st.warning("⚠️ GROQ_API_KEY belum diset. Tambahkan ke file `.env`.")

@@ -205,3 +205,60 @@ Gunakan Bahasa Indonesia yang mudah dipahami."""
 
     return _call(SYSTEM_ANALYST, prompt, max_tokens=2500)
 
+
+def bandarmology_analysis(ticker: str, name: str, bandar_report: dict,
+                          tech_report: dict, timeframe: str) -> str:
+    """Generate AI analysis for bandarmology (big money tracking)."""
+    signals_str = "\n".join(
+        f"- [{s['type'].upper()}] {s['name']}: {s['detail']}"
+        for s in bandar_report.get("signals", [])
+    )
+    vals = bandar_report.get("values", {})
+    big_money = bandar_report.get("big_money", {})
+    tech_vals = tech_report.get("values", {}) if tech_report else {}
+
+    prompt = f"""Kamu diminta menganalisis pergerakan **Big Money (Bandarmologi)** untuk saham {ticker} ({name}).
+
+## Status Bandar:
+- Overall: {bandar_report.get('overall', 'N/A')}
+- Confidence: {bandar_report.get('confidence', 0)}%
+- Bandar Score: {vals.get('bandar_score', 0):+.0f}
+
+## Sinyal Bandarmologi Terdeteksi:
+{signals_str}
+
+## Data Money Flow:
+- Money Flow Index (MFI): {vals.get('mfi', 0):.1f}
+- Chaikin Money Flow (CMF): {vals.get('cmf', 0):.3f}
+- Force Index: {vals.get('force_index', 0):,.0f}
+- OBV vs SMA: {'Di atas' if vals.get('obv', 0) > vals.get('obv_sma', 0) else 'Di bawah'}
+
+## Aktivitas Big Money:
+- Total Hari Volume Besar: {big_money.get('big_vol_days_total', 0)}
+- Hari Akumulasi: {big_money.get('accumulation_days', 0)}
+- Hari Distribusi: {big_money.get('distribution_days', 0)}
+- Akumulasi Baru-baru ini (10 bar): {big_money.get('recent_accum', 0)}
+- Distribusi Baru-baru ini (10 bar): {big_money.get('recent_distrib', 0)}
+
+## Data Teknikal Pendukung:
+- Harga: Rp{tech_vals.get('price', 0):,.0f}
+- RSI: {tech_vals.get('rsi', 0):.1f}
+- Volume vs Avg: {vals.get('volume_last', 0) / max(vals.get('volume_avg_20', 1), 1):.1f}x
+
+Berikan analisis **Bandarmologi** meliputi:
+1. **🏦 Profil Bandar** – Apakah bandar sedang akumulasi, distribusi, atau menunggu?
+2. **📊 Analisis Money Flow** – Interpretasi arus uang besar berdasarkan indikator
+3. **🔍 Pola Pergerakan** – Pola yang terdeteksi (silent accumulation, dump, pump, distribusi tersembunyi)
+4. **⚡ Potensi Pergerakan** – Berdasarkan pola bandar, apa yang mungkin terjadi selanjutnya?
+5. **⚠️ Peringatan** – Red flags atau hal yang perlu diwaspadai
+
+PENTING:
+- Jelaskan dalam konteks pasar saham Indonesia
+- Gunakan istilah bandarmologi yang umum (akumulasi, distribusi, markup, markdown)
+- JANGAN berikan rekomendasi beli/jual
+- Analisis ini hanya untuk edukasi
+
+Gunakan Bahasa Indonesia yang mudah dipahami."""
+
+    return _call(SYSTEM_ANALYST, prompt, max_tokens=2500)
+

@@ -112,23 +112,77 @@ CUSTOM_CSS = """
         border-right: 1px solid rgba(255,255,255,0.05);
     }
     
-    /* Sidebar Navigation Links */
-    div[data-testid="stSidebarNav"] li {
-        margin: 4px 12px;
-        border-radius: 8px;
-        transition: all 0.2s;
+    /* Sidebar Layout Reordering */
+    div[data-testid="stSidebarContent"] {
+        display: flex;
+        flex-direction: column;
+    }
+    div[data-testid="stSidebarNav"] {
+        order: 2;
+    }
+    div[data-testid="stSidebarContent"] > div:not([data-testid="stSidebarNav"]) {
+        order: 1; /* Pushes our custom header above the nav */
+    }
+
+    /* Active State for Sidebar Navigation */
+    div[data-testid="stSidebarNav"] a[aria-current="page"] {
+        background: linear-gradient(90deg, rgba(0, 212, 170, 0.15) 0%, rgba(0, 212, 170, 0.05) 100%) !important;
+        border-left: 3px solid #00d4aa !important;
+        border-radius: 0 8px 8px 0 !important;
+        margin-left: 0 !important;
+    }
+    div[data-testid="stSidebarNav"] a[aria-current="page"] span {
+        color: #00d4aa !important;
+        font-weight: 700 !important;
     }
     div[data-testid="stSidebarNav"] a {
+        border-left: 3px solid transparent;
+        border-radius: 0 8px 8px 0 !important;
         transition: all 0.2s;
-        border-radius: 8px;
     }
     div[data-testid="stSidebarNav"] a:hover {
-        background: rgba(0, 212, 170, 0.1) !important;
-        color: #00e6b8 !important;
-        transform: translateX(4px);
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-left: 3px solid rgba(0, 212, 170, 0.5) !important;
+        transform: translateX(2px);
     }
-    div[data-testid="stSidebarNav"] a:hover span {
-        color: #00e6b8 !important;
+
+    /* Section Label and Thin Divider */
+    div[data-testid="stSidebarNav"] ul li > div:first-child {
+        text-transform: uppercase !important;
+        letter-spacing: 1.5px !important;
+        font-weight: 700 !important;
+        font-size: 0.7rem !important;
+        color: #64748b !important;
+        border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+        padding-bottom: 8px !important;
+        margin-top: 24px !important;
+        margin-bottom: 8px !important;
+    }
+
+    /* Contextual Badges */
+    div[data-testid="stSidebarNav"] a[href*="Auto_Analisis"] span:last-child::after {
+        content: "AI";
+        background: linear-gradient(135deg, #a855f7, #6366f1);
+        color: white;
+        font-size: 0.6rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 10px;
+        margin-left: 8px;
+        vertical-align: middle;
+        box-shadow: 0 2px 6px rgba(168, 85, 247, 0.4);
+    }
+    
+    div[data-testid="stSidebarNav"] a[href*="Watchlist"] span:last-child::after {
+        content: "";
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background: #ff4757;
+        border-radius: 50%;
+        margin-left: 8px;
+        vertical-align: middle;
+        box-shadow: 0 0 8px rgba(255, 71, 87, 0.6);
     }
     
     h1, h2, h3 { 
@@ -200,7 +254,7 @@ def setup_page(title="Analis Saham Indonesia", layout="wide"):
         initial_sidebar_state="expanded",
     )
     st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
-    st.logo("assets/logo.png")
+    # Removing st.logo() to use custom header instead
 
 
 def show_disclosure():

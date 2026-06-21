@@ -311,7 +311,7 @@ if st.session_state.get("run_aa_ticker") == ticker and st.session_state.get("run
     with lv1:
         st.markdown(f"""
         <div class="gauge-card">
-            <h4>:material/push_pin: Level Kunci</h4>
+            <h4>Level Kunci</h4>
             <p>🟢 <b>Resistance 1:</b> Rp{levels['resistance_1']:,.0f}</p>
             <p>🟢 <b>Resistance 2 (BB Upper):</b> Rp{levels['resistance_2']:,.0f}</p>
             <p>🔴 <b>Support 1 (SMA-Fast):</b> Rp{levels['support_1']:,.0f}</p>
@@ -322,7 +322,7 @@ if st.session_state.get("run_aa_ticker") == ticker and st.session_state.get("run
     with lv2:
         st.markdown(f"""
         <div class="gauge-card">
-            <h4>:material/warning: Level Edukatif (Berdasarkan ATR)</h4>
+            <h4>Level Edukatif (Berdasarkan ATR)</h4>
             <p style="color:#888;font-size:0.85rem;">Level ini dihitung otomatis dari ATR, bukan rekomendasi.</p>
             <p>🛑 <b>Stop Loss Area:</b> Rp{levels['stop_loss_suggest']:,.0f} <span style="color:#888;">(−1.5x ATR)</span></p>
             <p>🎯 <b>Take Profit Area:</b> Rp{levels['take_profit_suggest']:,.0f} <span style="color:#888;">(+2x ATR)</span></p>

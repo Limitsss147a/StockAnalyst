@@ -266,27 +266,25 @@ def setup_page(title="Analis Saham Indonesia", layout="wide"):
         total_alerts = 0
         
     if total_alerts > 0:
-        dynamic_css = f"""
-        <style>
-        div[data-testid="stSidebarNav"] a[href*="Watchlist"]::after {{
-            content: "{total_alerts}";
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #ff4757;
-            color: white;
-            font-size: 0.65rem;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 12px;
-            min-width: 18px;
-            text-align: center;
-            box-shadow: 0 0 8px rgba(255, 71, 87, 0.4);
-            line-height: 1.2;
-        }}
-        </style>
-        """
+        dynamic_css = f"""<style>
+div[data-testid="stSidebarNav"] a[href*="Watchlist"]::after {{
+    content: "{total_alerts}";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #ff4757;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 12px;
+    min-width: 18px;
+    text-align: center;
+    box-shadow: 0 0 8px rgba(255, 71, 87, 0.4);
+    line-height: 1.2;
+}}
+</style>"""
     else:
         dynamic_css = ""
         

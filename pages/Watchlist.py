@@ -1,6 +1,6 @@
 """👀 Watchlist – Pantauan saham & sistem notifikasi."""
 
-from lib.config import setup_page, show_disclosure
+from lib.config import setup_page, show_disclosure, GROQ_API_KEY
 setup_page("Watchlist & Alert – Analis Saham")
 
 import streamlit as st
@@ -138,6 +138,43 @@ else:
                     target_parts.append(f"Target Jual: Rp{ts:,.0f}")
                     
             st.markdown(f"<p style='color:#888;font-size:0.85rem;margin:4px 0 0 48px;'>{' &nbsp;|&nbsp; '.join(target_parts)}</p>", unsafe_allow_html=True)
+
+        # ── AI Analysis Expander ──
+        with st.expander(f"🤖 Analisis Sinyal AI {t.replace('.JK', '')}"):
+            if st.button(f":material/smart_toy: Generate Strategi AI", key=f"ai_btn_{t}"):
+                with st.spinner("Memproses sinyal dan menganalisis..."):
+                    from lib.groq_analyst import alert_analysis
+                    alerts = check_stock_alerts(t)
+                    
+                    # Add target price alerts
+                    tb = item.get("target_buy", 0)
+                    ts = item.get("target_sell", 0)
+                    if tb > 0 and price > 0 and price <= tb:
+                        alerts.insert(0, {
+                            "emoji": "🎯", "title": "Mencapai Target Beli",
+                            "detail": f"Harga Rp{price:,.0f} ≤ Target Rp{tb:,.0f}",
+                            "severity": "critical"
+                        })
+                    if ts > 0 and price > 0 and price >= ts:
+                        alerts.insert(0, {
+                            "emoji": "🎯", "title": "Mencapai Target Jual",
+                            "detail": f"Harga Rp{price:,.0f} ≥ Target Rp{ts:,.0f}",
+                            "severity": "critical"
+                        })
+                    
+                    if not alerts:
+                        st.success("✅ Tidak ada sinyal khusus saat ini. Saham dalam kondisi stabil.")
+                    else:
+                        st.markdown("**Sinyal Terdeteksi:**")
+                        st.markdown(format_alerts_html(alerts), unsafe_allow_html=True)
+                        
+                        if not GROQ_API_KEY:
+                            st.warning("⚠️ GROQ_API_KEY belum diset. Tambahkan ke file `.env` untuk analisis AI.")
+                        else:
+                            st.markdown("---")
+                            st.markdown("**Analisis Strategi AI:**")
+                            res = alert_analysis(t, name, price, alerts)
+                            st.info(res)
 
         # ── Alert Results ──
         if run_alerts:

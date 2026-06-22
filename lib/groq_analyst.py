@@ -206,6 +206,30 @@ Gunakan Bahasa Indonesia yang mudah dipahami."""
     return _call(SYSTEM_ANALYST, prompt, max_tokens=2500)
 
 
+def alert_analysis(ticker: str, name: str, price: float, alerts: list) -> str:
+    """Generate AI analysis and strategies based on triggered alerts."""
+    alerts_str = "\n".join(
+        f"- [{a.get('severity', 'info').upper()}] {a.get('title')}: {a.get('detail')}"
+        for a in alerts
+    )
+    
+    prompt = f"""Saham {ticker} ({name}) saat ini berada di harga Rp{price:,.0f} dan telah memicu beberapa peringatan (alert) dari sistem pemantauan.
+
+## Sinyal & Peringatan Terdeteksi:
+{alerts_str}
+
+Berikan analisis komprehensif berdasarkan sinyal-sinyal di atas, meliputi:
+1. **🔍 Interpretasi Sinyal** – Apa arti dari kumpulan sinyal tersebut dalam kondisi pasar saat ini?
+2. **⚖️ Pro & Kontra** – Faktor pendukung vs penekan pergerakan harga berdasarkan sinyal yang ada.
+3. **🎯 Skenario Pergerakan** – Potensi pergerakan harga selanjutnya (skenario naik vs turun).
+4. **💡 Saran & Strategi Edukatif** – Strategi manajemen risiko dan opsi tindakan (misal: "wait and see", "pertimbangkan trailing stop", dsb).
+
+PENTING:
+- JANGAN berikan rekomendasi beli/jual secara eksplisit (misal: "Beli sekarang").
+- Fokus pada pendekatan manajemen risiko dan strategi trading yang objektif.
+- Gunakan bahasa Indonesia yang mudah dipahami.
+"""
+    return _call(SYSTEM_ANALYST, prompt, max_tokens=2000)
 def bandarmology_analysis(ticker: str, name: str, bandar_report: dict,
                           tech_report: dict, timeframe: str) -> str:
     """Generate AI analysis for bandarmology (big money tracking)."""

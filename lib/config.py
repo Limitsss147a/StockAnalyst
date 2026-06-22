@@ -186,23 +186,8 @@ CUSTOM_CSS = """
         line-height: 1;
     }
     
-    div[data-testid="stSidebarNav"] a[href*="Watchlist"]::after {
-        content: "3";
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: #ff4757;
-        color: white;
-        font-size: 0.65rem;
-        font-weight: 700;
-        padding: 2px 6px;
-        border-radius: 12px;
-        min-width: 18px;
-        text-align: center;
-        box-shadow: 0 0 8px rgba(255, 71, 87, 0.4);
-        line-height: 1.2;
-    }
+    /* Watchlist dynamic badge is injected separately in setup_page() */
+
     
     h1, h2, h3 { 
         font-weight: 600; 
@@ -272,7 +257,40 @@ def setup_page(title="Analis Saham Indonesia", layout="wide"):
         layout=layout,
         initial_sidebar_state="expanded",
     )
-    st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+    
+    # ── Dynamic Watchlist Badge ──
+    try:
+        from lib.alerts import get_total_watchlist_alerts
+        total_alerts = get_total_watchlist_alerts()
+    except Exception:
+        total_alerts = 0
+        
+    if total_alerts > 0:
+        dynamic_css = f"""
+        <style>
+        div[data-testid="stSidebarNav"] a[href*="Watchlist"]::after {{
+            content: "{total_alerts}";
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #ff4757;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 12px;
+            min-width: 18px;
+            text-align: center;
+            box-shadow: 0 0 8px rgba(255, 71, 87, 0.4);
+            line-height: 1.2;
+        }}
+        </style>
+        """
+    else:
+        dynamic_css = ""
+        
+    st.markdown(CUSTOM_CSS + dynamic_css, unsafe_allow_html=True)
     # Removing st.logo() to use custom header instead
 
 

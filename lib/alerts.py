@@ -2,6 +2,7 @@
 
 import pandas as pd
 import numpy as np
+import streamlit as st
 from lib.market_data import get_history
 from lib.technicals import (
     calc_rsi, calc_macd, calc_sma, calc_stochastic,
@@ -226,3 +227,29 @@ def format_alerts_telegram(ticker: str, alerts: list) -> str:
         lines.append(f"     {a['detail']}")
     
     return "\n".join(lines)
+
+
+@st.cache_data(ttl=300)  # Cache for 5 minutes
+def get_total_watchlist_alerts() -> int:
+    """Calculate the total number of alerts across the entire watchlist."""
+    from lib.watchlist import load_watchlist
+    from lib.market_data import get_quote
+    
+    watchlist = load_watchlist()
+    total = 0
+    for item in watchlist:
+        t = item["ticker"]
+        alerts = check_stock_alerts(t)
+        total += len(alerts)
+        
+        q = get_quote(t)
+        price = q.get("price", 0)
+        tb = item.get("target_buy", 0)
+        ts = item.get("target_sell", 0)
+        
+        if tb > 0 and price > 0 and price <= tb:
+            total += 1
+        if ts > 0 and price > 0 and price >= ts:
+            total += 1
+            
+    return total

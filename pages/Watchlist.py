@@ -452,13 +452,15 @@ else:
                         alerts.insert(0, {
                             "emoji": "🎯", "title": "Mencapai Target Beli",
                             "detail": f"Harga Rp{price:,.0f} ≤ Target Rp{tb:,.0f}",
-                            "severity": "critical"
+                            "severity": "critical",
+                            "sentiment": "strong_bullish"
                         })
                     if ts > 0 and price > 0 and price >= ts:
                         alerts.insert(0, {
                             "emoji": "🎯", "title": "Mencapai Target Jual",
                             "detail": f"Harga Rp{price:,.0f} ≥ Target Rp{ts:,.0f}",
-                            "severity": "critical"
+                            "severity": "critical",
+                            "sentiment": "strong_bearish"
                         })
                     
                     if not alerts:
@@ -485,13 +487,15 @@ else:
                     alerts.insert(0, {
                         "emoji": "🎯", "title": "Mencapai Target Beli",
                         "detail": f"Harga Rp{price:,.0f} ≤ Target Rp{tb:,.0f}",
-                        "severity": "critical"
+                        "severity": "critical",
+                        "sentiment": "strong_bullish"
                     })
                 if ts > 0 and price > 0 and price >= ts:
                     alerts.insert(0, {
                         "emoji": "🎯", "title": "Mencapai Target Jual",
                         "detail": f"Harga Rp{price:,.0f} ≥ Target Rp{ts:,.0f}",
-                        "severity": "critical"
+                        "severity": "critical",
+                        "sentiment": "strong_bearish"
                     })
                 
                 if alerts:

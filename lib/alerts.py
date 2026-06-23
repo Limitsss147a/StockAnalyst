@@ -59,13 +59,15 @@ def check_stock_alerts(ticker: str):
         alerts.append({
             "emoji": "📉", "title": "RSI Oversold",
             "detail": f"RSI(14) = {curr_rsi:.1f} — Saham sudah dalam zona jenuh jual, potensi rebound.",
-            "severity": "critical"
+            "severity": "critical",
+            "sentiment": "strong_bullish"
         })
     elif curr_rsi > 70:
         alerts.append({
             "emoji": "📈", "title": "RSI Overbought",
             "detail": f"RSI(14) = {curr_rsi:.1f} — Saham sudah dalam zona jenuh beli, waspada koreksi.",
-            "severity": "warning"
+            "severity": "warning",
+            "sentiment": "strong_bearish"
         })
 
     # RSI divergence (price makes new low but RSI makes higher low — bullish divergence)
@@ -78,7 +80,8 @@ def check_stock_alerts(ticker: str):
             alerts.append({
                 "emoji": "🔀", "title": "Bullish RSI Divergence",
                 "detail": "Harga membuat lower low tetapi RSI membuat higher low — sinyal pembalikan arah naik.",
-                "severity": "critical"
+                "severity": "critical",
+                "sentiment": "strong_bullish"
             })
 
     # ── 2. MACD Alerts ──
@@ -86,13 +89,15 @@ def check_stock_alerts(ticker: str):
         alerts.append({
             "emoji": "✨", "title": "MACD Golden Cross",
             "detail": "Histogram MACD baru berubah positif — momentum bullish dimulai.",
-            "severity": "critical"
+            "severity": "critical",
+            "sentiment": "strong_bullish"
         })
     elif prev_macd >= 0 and curr_macd < 0:
         alerts.append({
             "emoji": "💀", "title": "MACD Death Cross",
             "detail": "Histogram MACD baru berubah negatif — momentum bearish dimulai.",
-            "severity": "critical"
+            "severity": "critical",
+            "sentiment": "strong_bearish"
         })
 
     # ── 3. SMA Support/Resistance ──
@@ -102,13 +107,15 @@ def check_stock_alerts(ticker: str):
             alerts.append({
                 "emoji": "🛡️", "title": "Mendekati Support SMA-200",
                 "detail": f"Harga Rp{current_price:,.0f} hanya {dist_to_sma200:.1f}% di atas SMA-200 (Rp{curr_sma200:,.0f}).",
-                "severity": "warning"
+                "severity": "warning",
+                "sentiment": "bullish"
             })
         elif -2 <= dist_to_sma200 < 0:
             alerts.append({
                 "emoji": "🚨", "title": "Breakdown di Bawah SMA-200",
                 "detail": f"Harga Rp{current_price:,.0f} jatuh di bawah SMA-200 (Rp{curr_sma200:,.0f}) — sinyal bearish kuat.",
-                "severity": "critical"
+                "severity": "critical",
+                "sentiment": "strong_bearish"
             })
 
     # ── 4. Golden Cross / Death Cross (SMA-50 vs SMA-200) ──
@@ -117,13 +124,15 @@ def check_stock_alerts(ticker: str):
             alerts.append({
                 "emoji": "🌟", "title": "Golden Cross (SMA-50 × SMA-200)",
                 "detail": "SMA-50 baru saja menembus ke atas SMA-200 — sinyal tren naik jangka panjang.",
-                "severity": "critical"
+                "severity": "critical",
+                "sentiment": "strong_bullish"
             })
         elif prev_sma50 >= prev_sma200 and curr_sma50 < curr_sma200:
             alerts.append({
                 "emoji": "☠️", "title": "Death Cross (SMA-50 × SMA-200)",
                 "detail": "SMA-50 baru saja menembus ke bawah SMA-200 — sinyal tren turun jangka panjang.",
-                "severity": "critical"
+                "severity": "critical",
+                "sentiment": "strong_bearish"
             })
 
     # ── 5. Stochastic Alerts ──
@@ -131,7 +140,8 @@ def check_stock_alerts(ticker: str):
         alerts.append({
             "emoji": "⚡", "title": "Stochastic Golden Cross (Oversold)",
             "detail": f"%K({curr_k:.0f}) naik menembus %D({curr_d:.0f}) dari zona oversold.",
-            "severity": "warning"
+            "severity": "warning",
+            "sentiment": "bullish"
         })
 
     # ── 6. Bollinger Band Alerts ──
@@ -140,14 +150,16 @@ def check_stock_alerts(ticker: str):
             alerts.append({
                 "emoji": "📊", "title": "Pantulan dari Lower Bollinger Band",
                 "detail": f"Harga menyentuh lower band (Rp{bb_lower.iloc[-1]:,.0f}) dan memantul — potensi rebound.",
-                "severity": "warning"
+                "severity": "warning",
+                "sentiment": "bullish"
             })
     if pd.notna(bb_upper.iloc[-1]):
         if high.iloc[-1] >= bb_upper.iloc[-1] and close.iloc[-1] < bb_upper.iloc[-1]:
             alerts.append({
                 "emoji": "⚠️", "title": "Ditolak dari Upper Bollinger Band",
                 "detail": f"Harga mencapai upper band (Rp{bb_upper.iloc[-1]:,.0f}) dan tertolak — potensi koreksi.",
-                "severity": "info"
+                "severity": "info",
+                "sentiment": "bearish"
             })
 
     # ── 7. Volume Surge ──
@@ -161,13 +173,15 @@ def check_stock_alerts(ticker: str):
                 alerts.append({
                     "emoji": "🔥", "title": "Volume Surge Besar",
                     "detail": f"Volume {vol_ratio:.1f}x lipat di atas rata-rata 20 hari — pergerakan signifikan.",
-                    "severity": "critical"
+                    "severity": "critical",
+                    "sentiment": "neutral"
                 })
             elif vol_ratio >= 2:
                 alerts.append({
                     "emoji": "📢", "title": "Volume Di Atas Rata-rata",
                     "detail": f"Volume {vol_ratio:.1f}x lipat di atas rata-rata — ada ketertarikan pasar.",
-                    "severity": "info"
+                    "severity": "info",
+                    "sentiment": "neutral"
                 })
 
     # ── 8. 52-Week High/Low Proximity ──
@@ -177,13 +191,15 @@ def check_stock_alerts(ticker: str):
         alerts.append({
             "emoji": "🏔️", "title": "Mendekati Harga Tertinggi 52 Minggu",
             "detail": f"Harga Rp{current_price:,.0f} mendekati 52W High (Rp{high_52w:,.0f}) — All-Time High breakout?",
-            "severity": "info"
+            "severity": "info",
+            "sentiment": "bullish"
         })
     elif current_price <= low_52w * 1.05:
         alerts.append({
             "emoji": "🕳️", "title": "Mendekati Harga Terendah 52 Minggu",
             "detail": f"Harga Rp{current_price:,.0f} mendekati 52W Low (Rp{low_52w:,.0f}) — Sangat murah atau ada masalah?",
-            "severity": "warning"
+            "severity": "warning",
+            "sentiment": "bearish"
         })
 
     return alerts
@@ -200,15 +216,20 @@ def format_alerts_html(alerts: list) -> str:
         "info": "border-left:4px solid #3b82f6;background:rgba(59,130,246,0.08);",
     }
     
+    sentiment_badges = {
+        "strong_bullish": "<span style='background:#00d4aa;color:#000;padding:2px 6px;border-radius:4px;font-size:0.7rem;font-weight:bold;margin-left:8px;'>Sangat Positif ↑↑</span>",
+        "bullish": "<span style='background:rgba(0,212,170,0.2);color:#00d4aa;border:1px solid rgba(0,212,170,0.3);padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:bold;margin-left:8px;'>Positif ↑</span>",
+        "neutral": "<span style='background:rgba(148,163,184,0.2);color:#94a3b8;border:1px solid rgba(148,163,184,0.3);padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:bold;margin-left:8px;'>Netral ↔</span>",
+        "bearish": "<span style='background:rgba(255,71,87,0.2);color:#ff4757;border:1px solid rgba(255,71,87,0.3);padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:bold;margin-left:8px;'>Negatif ↓</span>",
+        "strong_bearish": "<span style='background:#ff4757;color:#fff;padding:2px 6px;border-radius:4px;font-size:0.7rem;font-weight:bold;margin-left:8px;'>Sangat Negatif ↓↓</span>",
+    }
+    
     html_parts = []
     for a in alerts:
-        style = severity_styles.get(a["severity"], severity_styles["info"])
-        html_parts.append(f"""
-        <div style="{style}padding:10px 14px;margin:6px 0;border-radius:8px;">
-            <b>{a['emoji']} {a['title']}</b><br>
-            <span style="color:#aaa;font-size:0.85rem;">{a['detail']}</span>
-        </div>
-        """)
+        style = severity_styles.get(a.get("severity", "info"), severity_styles["info"])
+        sentiment = a.get("sentiment", "neutral")
+        badge = sentiment_badges.get(sentiment, "")
+        html_parts.append(f'<div style="{style}padding:10px 14px;margin:6px 0;border-radius:8px;"><b>{a["emoji"]} {a["title"]}</b>{badge}<br><span style="color:#aaa;font-size:0.85rem;">{a["detail"]}</span></div>')
     
     return "\n".join(html_parts)
 
@@ -219,11 +240,20 @@ def format_alerts_telegram(ticker: str, alerts: list) -> str:
         return ""
     
     severity_label = {"critical": "🔴", "warning": "🟡", "info": "🔵"}
+    sentiment_label = {
+        "strong_bullish": "[Sangat Positif ↑↑]",
+        "bullish": "[Positif ↑]",
+        "neutral": "[Netral ↔]",
+        "bearish": "[Negatif ↓]",
+        "strong_bearish": "[Sangat Negatif ↓↓]"
+    }
     
     lines = [f"📌 <b>{ticker.replace('.JK', '')}</b>"]
     for a in alerts:
-        icon = severity_label.get(a["severity"], "🔵")
-        lines.append(f"  {icon} {a['emoji']} <b>{a['title']}</b>")
+        icon = severity_label.get(a.get("severity", "info"), "🔵")
+        sentiment = a.get("sentiment", "neutral")
+        sent_badge = sentiment_label.get(sentiment, "")
+        lines.append(f"  {icon} {a['emoji']} <b>{a['title']}</b> {sent_badge}")
         lines.append(f"     {a['detail']}")
     
     return "\n".join(lines)

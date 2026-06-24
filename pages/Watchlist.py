@@ -504,7 +504,7 @@ else:
                 else:
                     st.markdown("<p style='color:#94a3b8;font-size:0.9rem;'>✅ Tidak ada sinyal khusus saat ini.</p>", unsafe_allow_html=True)
 
-        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin: 24px 0 32px 0; border: none; border-top: 1px dashed rgba(255,255,255,0.1);' />", unsafe_allow_html=True)
 
     # ── Send Telegram ──
     if run_alerts:

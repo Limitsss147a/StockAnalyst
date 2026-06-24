@@ -343,7 +343,13 @@ else:
     # Action buttons
     col_cek, col_test = st.columns([2, 2])
     with col_cek:
-        run_alerts = st.button(":material/radar: Scan Semua Sinyal", type="primary", use_container_width=True)
+        if st.button(":material/radar: Scan Semua Sinyal", type="primary", use_container_width=True):
+            st.session_state.show_scan_results = True
+            st.session_state.scanned_alerts = {}
+            st.session_state.send_telegram = True
+            st.session_state.run_alerts_trigger = True
+        else:
+            st.session_state.run_alerts_trigger = False
     with col_test:
         if tg_ok:
             test_tg = st.button(":material/send: Tes Koneksi Telegram", use_container_width=True)
@@ -361,7 +367,10 @@ else:
 
     st.write("")
     
-    all_alerts = {}  # ticker -> list of alert dicts
+    if st.session_state.get("show_scan_results"):
+        all_alerts = st.session_state.get("scanned_alerts", {})
+    else:
+        all_alerts = {}
     
     for sd in stock_data:
         t = sd["ticker"]
@@ -478,7 +487,7 @@ else:
                             st.info(res)
 
         # ── Alert Results ──
-        if run_alerts:
+        if st.session_state.get("run_alerts_trigger"):
             with st.spinner(f"Scanning {t.replace('.JK', '')}..."):
                 alerts = check_stock_alerts(t)
                 
@@ -498,22 +507,29 @@ else:
                         "sentiment": "strong_bearish"
                     })
                 
-                if alerts:
-                    all_alerts[t] = alerts
-                    st.markdown(format_alerts_html(alerts), unsafe_allow_html=True)
-                else:
-                    st.markdown("<p style='color:#94a3b8;font-size:0.9rem;'>✅ Tidak ada sinyal khusus saat ini.</p>", unsafe_allow_html=True)
+                st.session_state.scanned_alerts[t] = alerts
+                all_alerts[t] = alerts
+                
+        if st.session_state.get("show_scan_results"):
+            t_alerts = all_alerts.get(t, [])
+            if t_alerts:
+                st.markdown(format_alerts_html(t_alerts), unsafe_allow_html=True)
+            else:
+                st.markdown("<p style='color:#94a3b8;font-size:0.9rem;'>✅ Tidak ada sinyal khusus saat ini.</p>", unsafe_allow_html=True)
 
         st.markdown("<hr style='margin: 24px 0 32px 0; border: none; border-top: 1px dashed rgba(255,255,255,0.1);' />", unsafe_allow_html=True)
 
     # ── Send Telegram ──
-    if run_alerts:
-        # Summary
-        total_alerts = sum(len(v) for v in all_alerts.values())
-        critical_count = sum(1 for v in all_alerts.values() for a in v if a["severity"] == "critical")
+    if st.session_state.get("show_scan_results"):
+        # Filter all_alerts to only those with actual alerts
+        active_alerts = {k: v for k, v in all_alerts.items() if v}
         
-        if all_alerts:
-            st.markdown(f'<div class="metric-card" style="border-left:4px solid #00d4aa;"><h4 style="margin-top:0;">📊 Ringkasan Scan</h4><p><b>{total_alerts}</b> sinyal terdeteksi dari <b>{len(all_alerts)}</b> saham ({critical_count} kritis)</p></div>', unsafe_allow_html=True)
+        # Summary
+        total_alerts = sum(len(v) for v in active_alerts.values())
+        critical_count = sum(1 for v in active_alerts.values() for a in v if a["severity"] == "critical")
+        
+        if active_alerts:
+            st.markdown(f'<div class="metric-card" style="border-left:4px solid #00d4aa;"><h4 style="margin-top:0;">📊 Ringkasan Scan</h4><p><b>{total_alerts}</b> sinyal terdeteksi dari <b>{len(active_alerts)}</b> saham ({critical_count} kritis)</p></div>', unsafe_allow_html=True)
             
             # AI summary analysis expander
             with st.expander("🤖 Analisis Keseluruhan Watchlist AI"):
@@ -524,18 +540,19 @@ else:
                     else:
                         with st.spinner("Menganalisis sentimen keseluruhan..."):
                             from lib.groq_analyst import watchlist_summary_analysis
-                            summary_res = watchlist_summary_analysis(all_alerts)
+                            summary_res = watchlist_summary_analysis(active_alerts)
                             st.info(summary_res)
             
             st.markdown("<br>", unsafe_allow_html=True)
 
-            if tg_ok:
+            if st.session_state.get("send_telegram") and tg_ok:
+                st.session_state.send_telegram = False # Only send once per manual scan
                 now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M WIB")
                 msg = f"🔔 <b>STOCK ANALYST ALERT</b>\n🕒 {now}\n\n"
-                msg += f"📊 {total_alerts} sinyal dari {len(all_alerts)} saham\n\n"
+                msg += f"📊 {total_alerts} sinyal dari {len(active_alerts)} saham\n\n"
                 
-                for t, alerts in all_alerts.items():
-                    msg += format_alerts_telegram(t, alerts)
+                for t, t_alerts in active_alerts.items():
+                    msg += format_alerts_telegram(t, t_alerts)
                     msg += "\n\n"
                 
                 success, response_msg = send_telegram_message(msg)
@@ -544,9 +561,10 @@ else:
                     st.success("📱 Pesan peringatan berhasil dikirim ke Telegram Anda.")
                 else:
                     st.error(f"❌ Gagal mengirim Telegram: {response_msg}")
-            else:
+            elif not tg_ok and st.session_state.get("run_alerts_trigger"):
                 st.info("💡 Konfigurasi Telegram di `.env` untuk menerima notifikasi otomatis.")
         else:
-            st.success("✅ Semua saham dalam kondisi normal. Tidak ada sinyal khusus saat ini.")
+            if st.session_state.get("run_alerts_trigger"):
+                st.success("✅ Semua saham dalam kondisi normal. Tidak ada sinyal khusus saat ini.")
 
 show_disclosure()

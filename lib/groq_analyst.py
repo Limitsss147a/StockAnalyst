@@ -286,3 +286,31 @@ Gunakan Bahasa Indonesia yang mudah dipahami."""
 
     return _call(SYSTEM_ANALYST, prompt, max_tokens=2500)
 
+
+def watchlist_summary_analysis(all_alerts: dict) -> str:
+    """Generate AI analysis for the overall watchlist signals."""
+    if not all_alerts:
+        return "Tidak ada sinyal khusus yang terdeteksi di watchlist saat ini."
+    
+    # Format all_alerts dictionary into a readable string
+    alerts_str = ""
+    for ticker, alerts in all_alerts.items():
+        if alerts:
+            alerts_str += f"\n- {ticker}: " + ", ".join(f"{a.get('title')} ({a.get('sentiment', 'neutral')})" for a in alerts)
+    
+    prompt = f"""Kamu diminta untuk memberikan Ringkasan Analisis Sinyal dari keseluruhan Watchlist (Daftar Pantauan) berdasarkan hasil scan terbaru.
+    
+Berikut adalah daftar sinyal yang terdeteksi dari beberapa saham:
+{alerts_str}
+
+Berikan analisis makro atau ringkasan meliputi:
+1. **📊 Sentimen Keseluruhan** - Apa sentimen dominan (bullish/bearish) dari keseluruhan sinyal ini?
+2. **🔍 Fokus Perhatian** - Saham mana yang memiliki sinyal paling kuat/kritis dan layak dipantau ekstra?
+3. **💡 Insight Strategis** - Pendekatan strategi trading/investasi secara umum berdasarkan pola sinyal yang muncul saat ini (misal dominan oversold, atau dominan death cross).
+4. **⚠️ Manajemen Risiko** - Peringatan risiko umum bagi portfolio.
+
+PENTING:
+- JANGAN berikan rekomendasi beli/jual secara eksplisit.
+- Gunakan bahasa Indonesia yang mudah dipahami.
+"""
+    return _call(SYSTEM_ANALYST, prompt, max_tokens=2000)

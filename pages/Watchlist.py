@@ -515,6 +515,20 @@ else:
         if all_alerts:
             st.markdown(f'<div class="metric-card" style="border-left:4px solid #00d4aa;"><h4 style="margin-top:0;">📊 Ringkasan Scan</h4><p><b>{total_alerts}</b> sinyal terdeteksi dari <b>{len(all_alerts)}</b> saham ({critical_count} kritis)</p></div>', unsafe_allow_html=True)
             
+            # AI summary analysis expander
+            with st.expander("🤖 Analisis Keseluruhan Watchlist AI"):
+                st.caption("Klik tombol di bawah untuk mendapatkan rangkuman strategi dari semua sinyal yang terdeteksi.")
+                if st.button(":material/smart_toy: Generate Analisis Keseluruhan", use_container_width=True):
+                    if not GROQ_API_KEY:
+                        st.warning("⚠️ GROQ_API_KEY belum diset. Tambahkan ke file `.env` untuk analisis AI.")
+                    else:
+                        with st.spinner("Menganalisis sentimen keseluruhan..."):
+                            from lib.groq_analyst import watchlist_summary_analysis
+                            summary_res = watchlist_summary_analysis(all_alerts)
+                            st.info(summary_res)
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+
             if tg_ok:
                 now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M WIB")
                 msg = f"🔔 <b>STOCK ANALYST ALERT</b>\n🕒 {now}\n\n"

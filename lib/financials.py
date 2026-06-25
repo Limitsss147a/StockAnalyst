@@ -79,7 +79,7 @@ def render_revenue_profit_chart(income: pd.DataFrame):
                       height=380, margin=dict(l=10, r=10, t=45, b=10),
                       paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
                       yaxis=dict(gridcolor="rgba(255,255,255,0.04)"),
-                      legend=dict(orientation="h", y=1.12), font=dict(family="Inter"))
+                      legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center"), font=dict(family="Inter"))
     return fig
 
 
@@ -105,7 +105,7 @@ def render_margin_trend_chart(income: pd.DataFrame):
                       margin=dict(l=10, r=10, t=45, b=10),
                       paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
                       yaxis=dict(title="%", gridcolor="rgba(255,255,255,0.04)"),
-                      legend=dict(orientation="h", y=1.12), font=dict(family="Inter"))
+                      legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center"), font=dict(family="Inter"))
     return fig
 
 
@@ -127,7 +127,7 @@ def render_balance_sheet_chart(bs: pd.DataFrame):
                       margin=dict(l=10, r=10, t=45, b=10),
                       paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
                       yaxis=dict(gridcolor="rgba(255,255,255,0.04)"),
-                      legend=dict(orientation="h", y=1.12), font=dict(family="Inter"))
+                      legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center"), font=dict(family="Inter"))
     return fig
 
 
@@ -146,7 +146,7 @@ def render_cashflow_chart(cf: pd.DataFrame):
                       margin=dict(l=10, r=10, t=45, b=10),
                       paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
                       yaxis=dict(gridcolor="rgba(255,255,255,0.04)"),
-                      legend=dict(orientation="h", y=1.12), font=dict(family="Inter"))
+                      legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center"), font=dict(family="Inter"))
     return fig
 
 

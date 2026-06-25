@@ -348,6 +348,7 @@ else:
             st.session_state.scanned_alerts = {}
             st.session_state.send_telegram = True
             st.session_state.run_alerts_trigger = True
+            st.session_state.ai_summary_result = None
         else:
             st.session_state.run_alerts_trigger = False
     with col_test:
@@ -532,16 +533,24 @@ else:
             st.markdown(f'<div class="metric-card" style="border-left:4px solid #00d4aa;"><h4 style="margin-top:0;">📊 Ringkasan Scan</h4><p><b>{total_alerts}</b> sinyal terdeteksi dari <b>{len(active_alerts)}</b> saham ({critical_count} kritis)</p></div>', unsafe_allow_html=True)
             
             # AI summary analysis expander
-            with st.expander("🤖 Analisis Keseluruhan Watchlist AI"):
-                st.caption("Klik tombol di bawah untuk mendapatkan rangkuman strategi dari semua sinyal yang terdeteksi.")
-                if st.button(":material/smart_toy: Generate Analisis Keseluruhan", use_container_width=True):
-                    if not GROQ_API_KEY:
-                        st.warning("⚠️ GROQ_API_KEY belum diset. Tambahkan ke file `.env` untuk analisis AI.")
-                    else:
-                        with st.spinner("Menganalisis sentimen keseluruhan..."):
-                            from lib.groq_analyst import watchlist_summary_analysis
-                            summary_res = watchlist_summary_analysis(active_alerts)
-                            st.info(summary_res)
+            if st.session_state.get("ai_summary_result"):
+                with st.expander("🤖 Analisis Keseluruhan Watchlist AI", expanded=True):
+                    st.info(st.session_state.ai_summary_result)
+                    if st.button("Tutup Analisis", key="close_summary_btn", use_container_width=True):
+                        st.session_state.ai_summary_result = None
+                        st.rerun()
+            else:
+                with st.expander("🤖 Analisis Keseluruhan Watchlist AI", expanded=False):
+                    st.caption("Klik tombol di bawah untuk mendapatkan rangkuman strategi dari semua sinyal yang terdeteksi.")
+                    if st.button(":material/smart_toy: Generate Analisis Keseluruhan", use_container_width=True):
+                        if not GROQ_API_KEY:
+                            st.warning("⚠️ GROQ_API_KEY belum diset. Tambahkan ke file `.env` untuk analisis AI.")
+                        else:
+                            with st.spinner("Menganalisis sentimen keseluruhan..."):
+                                from lib.groq_analyst import watchlist_summary_analysis
+                                summary_res = watchlist_summary_analysis(active_alerts)
+                                st.session_state.ai_summary_result = summary_res
+                                st.rerun()
             
             st.markdown("<br>", unsafe_allow_html=True)
 

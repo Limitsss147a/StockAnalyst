@@ -196,15 +196,12 @@ st.caption(
 col_glance, col_tech, col_fund = st.columns([1.2, 1, 1])
 
 with col_glance:
-    st.markdown('<div class="gauge-card">', unsafe_allow_html=True)
-    st.markdown("**:material/push_pin: Sekilas (At a Glance)**")
+    html_content = '<div class="gauge-card" style="height:100%; display:flex; flex-direction:column; gap:12px;">'
+    html_content += '<div style="font-weight:600;">📌 Sekilas (At a Glance)</div>'
     for chip in chips:
-        st.markdown(
-            f'<span class="chip" style="border-color:{chip["color"]};">'
-            f'<b>{chip["label"]}:</b> {chip["value"]}</span>',
-            unsafe_allow_html=True,
-        )
-    st.markdown('</div>', unsafe_allow_html=True)
+        html_content += f'<div><span class="chip" style="border-color:{chip["color"]};"><b>{chip["label"]}:</b> {chip["value"]}</span></div>'
+    html_content += '</div>'
+    st.markdown(html_content, unsafe_allow_html=True)
 
 with col_tech:
     fig_tech = render_gauge(tech_score, title="Technical Strength",
